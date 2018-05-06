@@ -57,7 +57,6 @@ namespace InWorldz.RemoteAdmin
 
         public RemoteAdmin(string publicKeyPath = null)
         {
-            AddCommand("session", "login_with_password", SessionLoginWithPassword);
             AddCommand("session", "login_with_token", SessionLoginWithToken);
             AddCommand("session", "logout", SessionLogout);
 
@@ -179,31 +178,6 @@ namespace InWorldz.RemoteAdmin
                     m_activeSessions.Remove(key);
                 }
             }
-        }
-
-        private object SessionLoginWithPassword(IList args, IPEndPoint remoteClient)
-        {
-            UUID sessionId;
-            var username = (string)args[0];
-            var password = (string)args[1];
-
-            // Is the username the same as the logged in user and do they have the password correct?
-            if ( Util.AuthenticateAsSystemUser(username, password))
-            {
-                lock (m_activeSessions)
-                {
-                    sessionId = UUID.Random();
-                    m_activeSessions.Add(sessionId, DateTime.Now);
-                }
-            }
-            else
-            {
-                m_log.Warn($"Failure to authenticate for remote administration from {remoteClient} as operating system user '{username}'");
-                System.Threading.Thread.Sleep(2000);
-                throw new Exception("Invalid Username or Password");
-            }
-
-            return (sessionId.ToString());
         }
 
         private object SessionLoginWithToken(IList args, IPEndPoint remoteClient)

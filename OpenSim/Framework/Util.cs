@@ -53,11 +53,6 @@ using Amib.Threading;
 using System.Drawing;
 using System.Runtime.InteropServices;
 
-#if !__MonoCS__
-using System.DirectoryServices.AccountManagement;
-#endif
-
-
 namespace OpenSim.Framework
 {
     /// <summary>
@@ -173,31 +168,6 @@ namespace OpenSim.Framework
                 // TODO: Fill in implementation for linux/cross platform GetTickCount64 implementation
                 return (UInt64)Environment.TickCount;
             }
-        }
-
-
-        /// <summary
-        /// Authenticate a username/password pair against the user we are running under.
-        /// </summary>
-        /// <remarks>checks that the username is the same as the current System.Environment.UserName,
-        /// And Validates the password against the password for that account</remarks>
-        /// <returns>true if the authentication succeeded, false otherwise.</returns>
-        /// <param name='username'>string</param>
-        /// <param name='password'>string</param>
-        public static bool AuthenticateAsSystemUser(string username, string password)
-        {
-            #if __MonoCS__
-                // TODO: find a way to check the user info cross platform.  In the mean time better security by NOT allowing remote admin.
-                return false;
-            #else
-                // Is the username the same as the logged in user and do they have the password correct?
-                var pc = new PrincipalContext(ContextType.Machine);
-                var isValid =
-                    (username.Equals(Environment.UserName) &&
-                    pc.ValidateCredentials(username, password));
-
-                return (isValid);
-            #endif
         }
 
 
