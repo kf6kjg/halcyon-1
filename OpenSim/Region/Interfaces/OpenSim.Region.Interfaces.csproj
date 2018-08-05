@@ -63,57 +63,57 @@
 	  <PlatformTarget>x64</PlatformTarget>
 	</PropertyGroup>
 	<ItemGroup>
-	  <Reference Include="C5" >
+	  <Reference Include="C5">
 		  <Name>C5</Name>
 		<HintPath>..\..\..\bin\C5.dll</HintPath>
 		<Private>False</Private>
 	  </Reference>
-	  <Reference Include="LibreMetaverse" >
+	  <Reference Include="LibreMetaverse">
 		  <Name>LibreMetaverse</Name>
 		<HintPath>..\..\..\bin\LibreMetaverse.dll</HintPath>
 		<Private>False</Private>
 	  </Reference>
-	  <Reference Include="LibreMetaverse.StructuredData" >
+	  <Reference Include="LibreMetaverse.StructuredData">
 		  <Name>LibreMetaverse.StructuredData</Name>
 		<HintPath>..\..\..\bin\LibreMetaverse.StructuredData.dll</HintPath>
 		<Private>False</Private>
 	  </Reference>
-	  <Reference Include="LibreMetaverse.Types" >
+	  <Reference Include="LibreMetaverse.Types">
 		  <Name>LibreMetaverse.Types</Name>
 		<HintPath>..\..\..\bin\LibreMetaverse.Types.dll</HintPath>
 		<Private>False</Private>
 	  </Reference>
-	  <Reference Include="log4net" >
+	  <Reference Include="log4net">
 		  <Name>log4net</Name>
 		<HintPath>..\..\..\bin\log4net.dll</HintPath>
 		<Private>False</Private>
 	  </Reference>
-	  <Reference Include="Nini" >
+	  <Reference Include="Nini">
 		  <Name>Nini</Name>
 		<HintPath>..\..\..\bin\Nini.dll</HintPath>
 		<Private>False</Private>
 	  </Reference>
-	  <Reference Include="System" >
+	  <Reference Include="System">
 		  <Name>System</Name>
 		<Private>False</Private>
 	  </Reference>
-	  <Reference Include="System.Core" >
+	  <Reference Include="System.Core">
 		  <Name>System.Core</Name>
 		<Private>False</Private>
 	  </Reference>
-	  <Reference Include="System.Drawing" >
+	  <Reference Include="System.Drawing">
 		  <Name>System.Drawing</Name>
 		<Private>False</Private>
 	  </Reference>
-	  <Reference Include="System.Runtime.Remoting" >
+	  <Reference Include="System.Runtime.Remoting">
 		  <Name>System.Runtime.Remoting</Name>
 		<Private>False</Private>
 	  </Reference>
-	  <Reference Include="System.Web" >
+	  <Reference Include="System.Web">
 		  <Name>System.Web</Name>
 		<Private>False</Private>
 	  </Reference>
-	  <Reference Include="System.Xml" >
+	  <Reference Include="System.Xml">
 		  <Name>System.Xml</Name>
 		<Private>False</Private>
 	  </Reference>

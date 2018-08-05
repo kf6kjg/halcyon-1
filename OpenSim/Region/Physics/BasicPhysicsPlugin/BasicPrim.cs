@@ -174,8 +174,8 @@ namespace OpenSim.Region.Physics.BasicPhysicsPlugin
 
                 if (!wasKinematic)
                 {
-                    _dynActor.AngularVelocity = PhysX.Math.Vector3.Zero;
-                    _dynActor.LinearVelocity = PhysX.Math.Vector3.Zero;
+                    _dynActor.AngularVelocity = System.Numerics.Vector3.Zero;
+                    _dynActor.LinearVelocity = System.Numerics.Vector3.Zero;
                     _dynActor.PutToSleep();
                 }
             }
