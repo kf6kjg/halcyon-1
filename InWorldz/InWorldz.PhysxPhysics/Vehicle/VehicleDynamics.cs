@@ -37,6 +37,7 @@ using OpenSim.Framework;
 using OpenMetaverse;
 using log4net;
 using System.Reflection;
+using InWorldz.Physxstatic;
 
 namespace InWorldz.PhysxPhysics.Vehicle
 {
@@ -2289,6 +2290,8 @@ namespace InWorldz.PhysxPhysics.Vehicle
         // Raycastng in physx 3.2.x has bugs. Raycast single is broken, Raycast multiple returns an unordered list, determining the
         // hit array size has to be iterative. If a shape lies within another shape, that shape will be hit twice.
         //
+        // TODO: Not sure any of that is true anymore with this upgrade. Need to rebuild this though because of it.
+        // 
         internal PhysX.RaycastHit RaycastNearest(OpenMetaverse.Vector3  position, OpenMetaverse.Vector3 raydirection, float searchdist)
         {
             int   buffercount = 16;
@@ -2301,11 +2304,16 @@ namespace InWorldz.PhysxPhysics.Vehicle
             //Increase the buffer count if the call indicates overflow. Prevent infinite loops.
             while (hits == null && buffercount <= maxbuffercount)
             {
-                hits = _scene.SceneImpl.RaycastMultiple(PhysUtil.OmvVectorToPhysx(position),
-                                                        PhysUtil.OmvVectorToPhysx(raydirection),
-                                                        searchdist, oflags,
-                                                        buffercount,
-                                                        null);
+                hits = _scene.SceneImpl.Raycast(
+                    PhysUtil.OmvVectorToPhysx(position),
+                    PhysUtil.OmvVectorToPhysx(raydirection),
+                    searchdist,
+                    1, // Maximum hits
+                    (PhysX.RaycastHit[] hitss) =>
+                    {
+                        return false; // TODO: filter the hits...
+                    }
+                );
                 buffercount *= 2;
             }
 

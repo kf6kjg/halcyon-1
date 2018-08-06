@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, InWorldz Halcyon Developers
  * All rights reserved.
  * 
@@ -39,6 +39,7 @@ using System.IO;
 using log4net;
 using System.Reflection;
 using OpenSim.Region.Physics.ConvexDecompositionDotNet;
+using InWorldz.Physxstatic;
 
 namespace InWorldz.PhysxPhysics.Meshing
 {
@@ -243,7 +244,7 @@ namespace InWorldz.PhysxPhysics.Meshing
 
 
             int[] indexes = mesh.getIndexListAsInt();
-            PhysX.Math.Vector3[] verts = PhysUtil.OmvVectorArrayToPhysx(mesh.getVertexListAsArray());
+            System.Numerics.Vector3[] verts = PhysUtil.OmvVectorArrayToPhysx(mesh.getVertexListAsArray());
 
             mesh.ReleaseSourceMeshData();
 
@@ -263,7 +264,7 @@ namespace InWorldz.PhysxPhysics.Meshing
             {
                 try
                 {
-                    if (!_cooking.CookTriangleMesh(desc, ms))
+                    if (_cooking.CookTriangleMesh(desc, ms) != PhysX.TriangleMeshCookingResult.Success)
                     {
                         m_log.Warn("[InWorldz.PhysxPhysics] Unable to create trimesh for shape.");
                         return null;
@@ -337,11 +338,11 @@ namespace InWorldz.PhysxPhysics.Meshing
 
                 for (int i = 0; i < result.ConvexVerts.Count; i++)
                 {
-                    hulls[i] = new HacdConvexHull { Vertices = new PhysX.Math.Vector3[result.ConvexVerts[i].Count] };
+                    hulls[i] = new HacdConvexHull { Vertices = new System.Numerics.Vector3[result.ConvexVerts[i].Count] };
                     for (int j = 0; j < result.ConvexVerts[i].Count; j++)
                     {
                         var vert = result.ConvexVerts[i][j];
-                        hulls[i].Vertices[j] = new PhysX.Math.Vector3(vert.X, vert.Y, vert.Z);
+                        hulls[i].Vertices[j] = new System.Numerics.Vector3(vert.X, vert.Y, vert.Z);
                     }
                 }
             }
@@ -375,7 +376,7 @@ namespace InWorldz.PhysxPhysics.Meshing
 
                     using (MemoryStream ms = new MemoryStream())
                     {
-                        if (!_cooking.CookConvexMesh(convexMeshDesc, ms))
+                        if (_cooking.CookConvexMesh(convexMeshDesc, ms) != PhysX.ConvexMeshCookingResult.Success)
                         {
                             throw new PhysxSdkException("GenerateComplexPhysXShape: CookConvexMesh() failed");
                         }
@@ -428,7 +429,7 @@ namespace InWorldz.PhysxPhysics.Meshing
 
         private bool TryGenerateFallbackHullFromHullData(List<PhysX.ConvexMeshGeometry> ret, Exception e, List<OpenMetaverse.Vector3> vertList)
         {
-            PhysX.Math.Vector3[] verts = new PhysX.Math.Vector3[vertList.Count];
+            System.Numerics.Vector3[] verts = new System.Numerics.Vector3[vertList.Count];
             for (int i = 0; i < vertList.Count; i++)
             {
                 verts[i] = PhysUtil.OmvVectorToPhysx(vertList[i]);
@@ -535,7 +536,7 @@ namespace InWorldz.PhysxPhysics.Meshing
 
                 using (MemoryStream ms = new MemoryStream())
                 {
-                    if (!_cooking.CookConvexMesh(convexMeshDesc, ms))
+                    if (_cooking.CookConvexMesh(convexMeshDesc, ms) != PhysX.ConvexMeshCookingResult.Success)
                     {
                         throw new PhysxSdkException("GenerateBasicConvexHull: CookConvexMesh() failed");
                     }
@@ -555,7 +556,7 @@ namespace InWorldz.PhysxPhysics.Meshing
             return null;
         }
 
-        private PhysX.ConvexMeshGeometry GenerateBasicConvexHull(int[] indexes, PhysX.Math.Vector3[] verts)
+        private PhysX.ConvexMeshGeometry GenerateBasicConvexHull(int[] indexes, System.Numerics.Vector3[] verts)
         {
             try
             {
@@ -569,7 +570,7 @@ namespace InWorldz.PhysxPhysics.Meshing
 
                 using (MemoryStream ms = new MemoryStream())
                 {
-                    if (!_cooking.CookConvexMesh(convexMeshDesc, ms))
+                    if (_cooking.CookConvexMesh(convexMeshDesc, ms) != PhysX.ConvexMeshCookingResult.Success)
                     {
                         throw new PhysxSdkException("GenerateBasicConvexHull: CookConvexMesh() failed");
                     }

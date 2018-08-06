@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, InWorldz Halcyon Developers
  * All rights reserved.
  * 
@@ -357,7 +357,7 @@ namespace InWorldz.PhysxPhysics.Meshing
 
             public void Execute(MeshingStage meshingStage)
             {
-                Tuple<PhysX.Math.Vector3[], int[]> data = meshingStage._terrainMesher.GenerateTrimeshDataFromHeightmap(Terrain);
+                Tuple<System.Numerics.Vector3[], int[]> data = meshingStage._terrainMesher.GenerateTrimeshDataFromHeightmap(Terrain);
                 Tuple<PhysX.TriangleMesh, MemoryStream> trimeshData = meshingStage._terrainMesher.GenerateTrimeshFromIndexedTriangles(data.Item1, data.Item2);
 
                 CompleteCallback(trimeshData);

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, InWorldz Halcyon Developers
  * All rights reserved.
  * 
@@ -38,6 +38,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using InWorldz.Physxstatic;
 using OpenSim.Region.Physics.Manager;
 
 namespace InWorldz.PhysxPhysics
@@ -280,11 +281,11 @@ namespace InWorldz.PhysxPhysics
         {
             if (_velocity.Z != 0)
             {
-                PhysX.Math.Vector3 velWithZOnly = new PhysX.Math.Vector3(0f, 0f, _velocity.Z);
+                System.Numerics.Vector3 velWithZOnly = new System.Numerics.Vector3(0f, 0f, _velocity.Z);
 
                 if (Math.Abs(velWithZOnly.Z) <= (MIN_HOVER_DAMPING_VEL_BEFORE_ZEROING * hoverDamping))
                 {
-                    //_dynActor.LinearVelocity = new PhysX.Math.Vector3(_dynActor.LinearVelocity.X, _dynActor.LinearVelocity.Y, 0.0f) * hoverDamping;
+                    //_dynActor.LinearVelocity = new System.Numerics.Vector3(_dynActor.LinearVelocity.X, _dynActor.LinearVelocity.Y, 0.0f) * hoverDamping;
                     _dynActor.AddForce(-velWithZOnly * hoverDamping, PhysX.ForceMode.VelocityChange, true);
                 }
                 else
@@ -311,7 +312,7 @@ namespace InWorldz.PhysxPhysics
             if (Math.Abs(zforce) < MIN_PHYSX_FORCE) zforce = Math.Sign(zforce) * MIN_PHYSX_FORCE;
 
             // Apply strong correction if the movement is departing from the target.
-            PhysX.Math.Vector3 velWithZOnly = new PhysX.Math.Vector3(0f, 0f, zforce);
+            System.Numerics.Vector3 velWithZOnly = new System.Numerics.Vector3(0f, 0f, zforce);
             if (Math.Sign(_velocity.Z) != Math.Sign(diff))
             {
                 if (damping > 0.75f)
@@ -330,7 +331,7 @@ namespace InWorldz.PhysxPhysics
                 // Stay above PhysX NOP limits.
                 if (Math.Abs(zforce) < MIN_PHYSX_FORCE) zforce = Math.Sign(zforce) * MIN_PHYSX_FORCE;
 
-                _dynActor.AddForce(new PhysX.Math.Vector3(0f, 0f, zforce), PhysX.ForceMode.Impulse, true);
+                _dynActor.AddForce(new System.Numerics.Vector3(0f, 0f, zforce), PhysX.ForceMode.Impulse, true);
                 DoHoverDamping(damping, timeStep);
             }
         }
@@ -351,7 +352,7 @@ namespace InWorldz.PhysxPhysics
             // Stay above PhysX NOP limits.
             if (Math.Abs(zforce) < MIN_PHYSX_FORCE) zforce = Math.Sign(zforce) * MIN_PHYSX_FORCE;
 
-            PhysX.Math.Vector3 velWithZOnly = new PhysX.Math.Vector3(0f, 0f, zforce);
+            System.Numerics.Vector3 velWithZOnly = new System.Numerics.Vector3(0f, 0f, zforce);
             if (velWithZOnly.Z < 0.0f)
             {
                 //cancel -Z velocity
@@ -365,7 +366,7 @@ namespace InWorldz.PhysxPhysics
             if (Math.Abs(zforce) < MIN_PHYSX_FORCE) zforce = Math.Sign(zforce) * MIN_PHYSX_FORCE;
 
             //apply enough force to get to the target in TAU, as well as applying damping
-            _dynActor.AddForce(new PhysX.Math.Vector3(0f, 0f, zforce), PhysX.ForceMode.Impulse, true);
+            _dynActor.AddForce(new System.Numerics.Vector3(0f, 0f, zforce), PhysX.ForceMode.Impulse, true);
             DoHoverDamping(1.0f, timeStep);
         }
 
@@ -429,9 +430,9 @@ namespace InWorldz.PhysxPhysics
             if (normRot.ApproxEquals(target, AT_ROT_TOLERANCE))
             {
                 //nothing to do
-                if (_dynActor.AngularVelocity != PhysX.Math.Vector3.Zero)
+                if (_dynActor.AngularVelocity != System.Numerics.Vector3.Zero)
                 {
-                    _dynActor.AngularVelocity = PhysX.Math.Vector3.Zero;
+                    _dynActor.AngularVelocity = System.Numerics.Vector3.Zero;
                 }
                 return;
             }
@@ -620,7 +621,7 @@ namespace InWorldz.PhysxPhysics
                 localangvel.Z = 0;
 
             // Convert to global angular velocity.
-            PhysX.Math.Vector3 angvel = PhysUtil.OmvVectorToPhysx(localangvel * _rotation);
+            System.Numerics.Vector3 angvel = PhysUtil.OmvVectorToPhysx(localangvel * _rotation);
             
             // This is a harsh way to do this, but a locked axis must have no angular velocity whatsoever.
             if (angvel != _dynActor.AngularVelocity)

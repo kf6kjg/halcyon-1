@@ -32,10 +32,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using PhysX;
 
 namespace InWorldz.PhysxPhysics
 {
-    class CharacterRideOnBehavior : PhysX.ControllerBehaviorCallback
+    class CharacterRideOnBehavior : ControllerBehaviorCallback
     {
         /// <summary>
         /// The amount of time that a user must stay standing on top of an object before
@@ -68,19 +69,17 @@ namespace InWorldz.PhysxPhysics
             }
         }
 
-        public override PhysX.ControllerBehaviorFlag GetBehaviorFlags(PhysX.Shape shape)
+        public override ControllerBehaviorFlags GetBehaviorFlags(Shape shape, Actor actor)
         {
             if (IsRideOnPrim(shape))
             {
-                return PhysX.ControllerBehaviorFlag.CctCanRideOnObject;
+                return ControllerBehaviorFlags.CctCanRideOnObject;
             }
-            else
-            {
-                return 0;
-            }
+
+            return 0;
         }
 
-        private bool IsRideOnPrim(PhysX.Shape shape)
+        private bool IsRideOnPrim(Shape shape)
         {
             if (_standingOnPrim == null)
             {
@@ -102,9 +101,14 @@ namespace InWorldz.PhysxPhysics
             return false;
         }
 
-        public override PhysX.ControllerBehaviorFlag GetBehaviorFlags(PhysX.Controller controller)
+        public override ControllerBehaviorFlags GetBehaviorFlags(Controller controller)
         {
             return 0;
         }
-    }
+
+        public override ControllerBehaviorFlags GetBehaviorFlags(Obstacle obstacle)
+        {
+            return 0;
+        }
+}
 }

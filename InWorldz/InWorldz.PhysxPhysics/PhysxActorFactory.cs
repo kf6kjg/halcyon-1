@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, InWorldz Halcyon Developers
  * All rights reserved.
  * 
@@ -36,7 +36,7 @@ using OpenSim.Region.Physics.Manager;
 
 namespace InWorldz.PhysxPhysics
 {
-    internal class PhysxActorFactory
+    internal static class PhysxActorFactory
     {
         private const float DEFAULT_ANGULAR_DAMPING = 0.05f;
         private const float DEFAULT_LINEAR_DAMPING = 0.02f;
@@ -58,7 +58,7 @@ namespace InWorldz.PhysxPhysics
             bool physical, bool kinematic, Material material)
         {
             PhysX.RigidDynamic physActor = scene.SceneImpl.Physics.CreateRigidDynamic();
-            if (kinematic) physActor.Flags |= PhysX.RigidDynamicFlags.Kinematic;
+            if (kinematic) physActor.RigidBodyFlags |= PhysX.RigidBodyFlag.Kinematic;
 
             SetCommonProperties(scene, shape, position, rotation, physActor, physical, material);
 
@@ -102,8 +102,8 @@ namespace InWorldz.PhysxPhysics
         {
             shape.AssignToActor(physActor, material.PhyMaterial, physical);
             physActor.GlobalPose =
-                PhysX.Math.Matrix.RotationQuaternion(new PhysX.Math.Quaternion(rotation.X, rotation.Y, rotation.Z, rotation.W)) *
-                PhysX.Math.Matrix.Translation(position.X, position.Y, position.Z);
+                         System.Numerics.Matrix4x4.CreateFromQuaternion(new System.Numerics.Quaternion(rotation.X, rotation.Y, rotation.Z, rotation.W)) *
+                         System.Numerics.Matrix4x4.CreateTranslation(position.X, position.Y, position.Z);
         }
 
         public static PhysX.RigidActor CreateProperInitialActor(PhysicsShape meshedShape, PhysxScene scene, OpenMetaverse.Vector3 pos, 

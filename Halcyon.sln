@@ -436,8 +436,6 @@ Global
 		$2.NewLineForMembersInObjectInit = False
 		$2.NewLineForMembersInAnonymousTypes = False
 		$2.NewLineForClausesInQuery = False
-		$2.SpaceAfterMethodCallName = True
-		$2.SpaceBeforeOpenSquareBracket = True
 		$2.scope = text/x-csharp
 	EndGlobalSection
 EndGlobal

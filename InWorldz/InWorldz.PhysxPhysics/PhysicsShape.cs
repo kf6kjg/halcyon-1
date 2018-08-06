@@ -142,10 +142,10 @@ namespace InWorldz.PhysxPhysics
 
         internal List<PhysX.Shape> AssignToActor(PhysX.RigidActor actor, PhysX.Material material, bool physical)
         {
-            return AssignToActor(actor, material, PhysX.Math.Matrix.Identity, physical);
+            return AssignToActor(actor, material, System.Numerics.Matrix4x4.Identity, physical);
         }
 
-        internal List<PhysX.Shape> AssignToActor(PhysX.RigidActor actor, PhysX.Material material, PhysX.Math.Matrix localPose, bool physical)
+        internal List<PhysX.Shape> AssignToActor(PhysX.RigidActor actor, PhysX.Material material, System.Numerics.Matrix4x4 localPose, bool physical)
         {
             switch (_shapeType)
             {
@@ -168,18 +168,20 @@ namespace InWorldz.PhysxPhysics
             }
         }
 
-        private PhysX.Shape CreateTrimeshShape(PhysX.RigidActor actor, PhysX.Material material, ref PhysX.Math.Matrix localPose)
+        private PhysX.Shape CreateTrimeshShape(PhysX.RigidActor actor, PhysX.Material material, ref System.Numerics.Matrix4x4 localPose)
         {
-            PhysX.Shape shape = actor.CreateShape(_triMesh, material, localPose);
+            PhysX.Shape shape = actor.CreateShape(_triMesh, material);
+            shape.LocalPose = localPose;
             shape.RestOffset = REST_OFFSET;
 
             return shape;
         }
 
-        private PhysX.Shape CreatePrimitiveShape(PhysX.RigidActor actor, PhysX.Material material, ref PhysX.Math.Matrix localPose,
+        private PhysX.Shape CreatePrimitiveShape(PhysX.RigidActor actor, PhysX.Material material, ref System.Numerics.Matrix4x4 localPose,
             bool physical)
         {
-            PhysX.Shape shape = actor.CreateShape(_primitiveGeom, material, localPose);
+            PhysX.Shape shape = actor.CreateShape(_primitiveGeom, material);
+            shape.LocalPose = localPose;
             shape.RestOffset = REST_OFFSET;
 
             if (physical && Settings.Instance.UseCCD)
@@ -191,13 +193,14 @@ namespace InWorldz.PhysxPhysics
             return shape;
         }
 
-        private List<PhysX.Shape> AssignHullsToActor(PhysX.RigidActor actor, PhysX.Material material, PhysX.Math.Matrix localPose,
+        private List<PhysX.Shape> AssignHullsToActor(PhysX.RigidActor actor, PhysX.Material material, System.Numerics.Matrix4x4 localPose,
             bool physical)
         {
             List<PhysX.Shape> hulls = new List<PhysX.Shape>();
             foreach (PhysX.ConvexMeshGeometry geom in _convexHulls)
             {
-                PhysX.Shape shape = actor.CreateShape(geom, material, localPose);
+                PhysX.Shape shape = actor.CreateShape(geom, material);
+                shape.LocalPose = localPose;
                 shape.RestOffset = REST_OFFSET;
 
                 if (physical && Settings.Instance.UseCCD)

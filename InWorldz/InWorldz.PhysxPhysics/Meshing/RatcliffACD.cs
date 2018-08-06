@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, InWorldz Halcyon Developers
  * All rights reserved.
  * 
@@ -98,10 +98,10 @@ namespace InWorldz.PhysxPhysics.Meshing
                     rawVerts = new float[hull.HullVertices.Count * 3];
                 }
 
-                PhysX.Math.Vector3[] hullVerts = new PhysX.Math.Vector3[hull.HullVertices.Count];
+                System.Numerics.Vector3[] hullVerts = new System.Numerics.Vector3[hull.HullVertices.Count];
                 for (int j = 0; j < hull.HullVertices.Count; j++)
                 {
-                    hullVerts[j] = new PhysX.Math.Vector3(hull.HullVertices[j].x, hull.HullVertices[j].y, hull.HullVertices[j].z);
+                    hullVerts[j] = new System.Numerics.Vector3(hull.HullVertices[j].x, hull.HullVertices[j].y, hull.HullVertices[j].z);
 
                     if (rawVerts != null)
                     {

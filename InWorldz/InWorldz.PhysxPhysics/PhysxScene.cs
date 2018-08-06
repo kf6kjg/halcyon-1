@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, InWorldz Halcyon Developers
  * All rights reserved.
  * 
@@ -41,6 +41,7 @@ using OpenSim.Framework;
 using System.Runtime.InteropServices;
 using System.IO;
 using OpenSim.Region.Interfaces;
+using InWorldz.Physxstatic;
 
 namespace InWorldz.PhysxPhysics
 {
@@ -288,8 +289,8 @@ namespace InWorldz.PhysxPhysics
                 Material.BuiltinMaterialInit(_physics);
             }
 
-            _sceneDesc = new PhysX.SceneDesc(null, Settings.Instance.UseCCD);
-            _sceneDesc.Gravity = new PhysX.Math.Vector3(0f, 0f, Settings.Instance.Gravity);
+            _sceneDesc = new PhysX.SceneDesc();
+            _sceneDesc.Gravity = new System.Numerics.Vector3(0f, 0f, Settings.Instance.Gravity);
 
 
             _simEventDelegator = new SimulationEventCallbackDelegator();
@@ -302,12 +303,7 @@ namespace InWorldz.PhysxPhysics
 
             if (Settings.Instance.UseCCD)
             {
-                _scene.SetFlag(PhysX.SceneFlag.SweptIntegration, true);
-            }
-
-            if (Settings.Instance.UseVisualDebugger && _physics.RemoteDebugger != null)
-            {
-                _physics.RemoteDebugger.Connect("localhost", null, null, PhysX.VisualDebugger.VisualDebuggerConnectionFlag.Debug, null);
+                _sceneDesc.Flags |= PhysX.SceneFlag.EnableCcd;
             }
 
             _controllerManager = _scene.CreateControllerManager();
@@ -917,51 +913,67 @@ namespace InWorldz.PhysxPhysics
 
         private void OnContact(PhysX.ContactPairHeader contactPairHeader, PhysX.ContactPair[] pairs)
         {
-            if ((contactPairHeader.Flags & PhysX.ContactPairHeaderFlag.DeletedActor0) == 0)
+            if ((contactPairHeader.Flags & PhysX.ContactPairHeaderFlag.RemovedActor0) == 0)
             {
-                bool wasPrim = TryInformPrimOfContactChange(contactPairHeader, pairs, 0);
+                bool wasPrim = TryInformPrimOfContactChangeActor0(contactPairHeader, pairs);
                 if (! wasPrim)
                 {
-                    TryInformCharacterOfContactChange(contactPairHeader, pairs, 0);
+                    TryInformCharacterOfContactChangeActor0(contactPairHeader, pairs);
                 }
             }
 
-            if ((contactPairHeader.Flags & PhysX.ContactPairHeaderFlag.DeletedActor1) == 0)
+            if ((contactPairHeader.Flags & PhysX.ContactPairHeaderFlag.RemovedActor1) == 0)
             {
-                bool wasPrim = TryInformPrimOfContactChange(contactPairHeader, pairs, 1);
+                bool wasPrim = TryInformPrimOfContactChangeActor1(contactPairHeader, pairs);
                 if (!wasPrim)
                 {
-                    TryInformCharacterOfContactChange(contactPairHeader, pairs, 1);
+                    TryInformCharacterOfContactChangeActor1(contactPairHeader, pairs);
                 }
             }
         }
 
-        private bool TryInformCharacterOfContactChange(PhysX.ContactPairHeader contactPairHeader, PhysX.ContactPair[] pairs, int actorIndex)
+        private bool TryInformCharacterOfContactChangeActor0(PhysX.ContactPairHeader contactPairHeader, PhysX.ContactPair [] pairs)
         {
-            PhysxCharacter character = contactPairHeader.Actors[actorIndex].UserData as PhysxCharacter;
-            if (character != null)
+            if (contactPairHeader.Actor0.UserData is PhysxCharacter character)
             {
-                character.OnContactChangeSync(contactPairHeader, pairs, actorIndex);
+                character.OnContactChangeSync(contactPairHeader, pairs, 0);
                 return true;
             }
-            else
-            {
-                return false;
-            }
+
+            return false;
         }
 
-        private bool TryInformPrimOfContactChange(PhysX.ContactPairHeader contactPairHeader, PhysX.ContactPair[] pairs, int actorIndex)
+        private bool TryInformCharacterOfContactChangeActor1(PhysX.ContactPairHeader contactPairHeader, PhysX.ContactPair [] pairs)
         {
-            PhysxPrim prim = contactPairHeader.Actors[actorIndex].UserData as PhysxPrim;
-            if (prim != null)
+            if (contactPairHeader.Actor1.UserData is PhysxCharacter character)
             {
-                prim.OnContactChangeSync(contactPairHeader, pairs, actorIndex);
+                character.OnContactChangeSync(contactPairHeader, pairs, 1);
                 return true;
             }
-            else
+
+            return false;
+        }
+
+        private bool TryInformPrimOfContactChangeActor0(PhysX.ContactPairHeader contactPairHeader, PhysX.ContactPair[] pairs)
+        {
+            if (contactPairHeader.Actor0.UserData is PhysxPrim prim)
             {
-                return false;
+                prim.OnContactChangeSync(contactPairHeader, pairs, 0);
+                return true;
             }
+
+            return false;
+        }
+
+        private bool TryInformPrimOfContactChangeActor1(PhysX.ContactPairHeader contactPairHeader, PhysX.ContactPair[] pairs)
+        {
+            if (contactPairHeader.Actor1.UserData is PhysxPrim prim)
+            {
+                prim.OnContactChangeSync(contactPairHeader, pairs, 1);
+                return true;
+            }
+
+            return false;
         }
 
         void OnTrigger(PhysX.TriggerPair[] pairs)
@@ -970,8 +982,7 @@ namespace InWorldz.PhysxPhysics
             {
                 if (pair.TriggerShape != null)
                 {
-                    PhysxPrim triggerPrim = pair.TriggerShape.Actor.UserData as PhysxPrim;
-                    if (triggerPrim != null)
+                    if (pair.TriggerShape.Actor.UserData is PhysxPrim triggerPrim)
                     {
                         triggerPrim.OnTrigger(pair);
                     }
@@ -1104,11 +1115,13 @@ namespace InWorldz.PhysxPhysics
             //Increase the buffer count if the call indicates overflow. Prevent infinite loops.
             while (hits == null && buffercount <= maxbuffercount)
             {
-                hits = SceneImpl.RaycastMultiple(PhysUtil.OmvVectorToPhysx(start),
-                                                        PhysUtil.OmvVectorToPhysx(direction),
-                                                        distance, PhysX.SceneQueryFlags.All,
-                                                        buffercount,
-                                                        null);
+                hits = SceneImpl.Raycast(
+                    PhysUtil.OmvVectorToPhysx(start),
+                    PhysUtil.OmvVectorToPhysx(direction),
+                    distance, 
+                    1, // Maximum hits
+                    null /* TODO NEEDS CALLBACK */
+                );
                 buffercount *= 2;
             }
 
@@ -1126,7 +1139,7 @@ namespace InWorldz.PhysxPhysics
                         Distance = hit.Distance,
                         FaceIndex = hit.FaceIndex,
                         CollisionActor = hit.Shape.Actor.UserData as PhysicsActor,
-                        Position = PhysUtil.PhysxVectorToOmv(hit.Impact),
+                        Position = PhysUtil.PhysxVectorToOmv(hit.Position),
                         Normal = PhysUtil.PhysxVectorToOmv(hit.Normal),
                     });
                     if (++count >= hitAmounts)

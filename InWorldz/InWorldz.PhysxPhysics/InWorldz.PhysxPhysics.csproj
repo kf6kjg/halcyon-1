@@ -103,11 +103,6 @@
 		<HintPath>..\..\bin\nunit.framework.dll</HintPath>
 		<Private>False</Private>
 	  </Reference>
-	  <Reference Include="PhysX.Net.dll" >
-		  <Name>PhysX.Net.dll</Name>
-		<HintPath>..\..\bin\PhysX.Net.dll</HintPath>
-		<Private>False</Private>
-	  </Reference>
 	  <Reference Include="protobuf-net">
 		  <Name>protobuf-net</Name>
 		<HintPath>..\..\bin\protobuf-net.dll</HintPath>
@@ -153,6 +148,10 @@
 		<HintPath>..\..\bin\XmlRpcCS.dll</HintPath>
 		<Private>False</Private>
 	  </Reference>
+	  <Reference Include="PhysX.Net">
+	    <HintPath>..\..\packages\PhysX.Net.0.11.0-alpha\lib\net471\PhysX.Net.dll</HintPath>
+	  </Reference>
+	  <Reference Include="System.Numerics" />
 	</ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\..\OpenSim\Data\OpenSim.Data.csproj">

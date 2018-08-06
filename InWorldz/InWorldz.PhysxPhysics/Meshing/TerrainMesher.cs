@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, InWorldz Halcyon Developers
  * All rights reserved.
  * 
@@ -47,7 +47,7 @@ namespace InWorldz.PhysxPhysics.Meshing
             _cooking = _scene.Physics.CreateCooking();
         }
 
-        public Tuple<PhysX.Math.Vector3[], int[]> GenerateTrimeshDataFromHeightmap(float[] heightMap)
+        public Tuple<System.Numerics.Vector3[], int[]> GenerateTrimeshDataFromHeightmap(float[] heightMap)
         {
             const int EDGE_SIZE = 2;
             const int EDGE_COLS_ROWS_ADDED = EDGE_SIZE * 2;
@@ -55,12 +55,12 @@ namespace InWorldz.PhysxPhysics.Meshing
             const int MESH_SIZE = (int)OpenSim.Framework.Constants.RegionSize + EDGE_COLS_ROWS_ADDED;
 
             //build the trimesh points by row and column
-            PhysX.Math.Vector3[] points = new PhysX.Math.Vector3[MESH_SIZE * MESH_SIZE];
+            System.Numerics.Vector3[] points = new System.Numerics.Vector3[MESH_SIZE * MESH_SIZE];
             for (int y = 0; y < MESH_SIZE; y++)
             {
                 for (int x = 0; x < MESH_SIZE; x++)
                 {
-                    points[y * MESH_SIZE + x] = new PhysX.Math.Vector3(x - EDGE_SIZE, y - EDGE_SIZE, GetHeightAtPosition(heightMap, x - EDGE_SIZE, y - EDGE_SIZE));
+                    points[y * MESH_SIZE + x] = new System.Numerics.Vector3(x - EDGE_SIZE, y - EDGE_SIZE, GetHeightAtPosition(heightMap, x - EDGE_SIZE, y - EDGE_SIZE));
                 }
             }
 
@@ -90,7 +90,7 @@ namespace InWorldz.PhysxPhysics.Meshing
                 }
             }
 
-            return new Tuple<PhysX.Math.Vector3[], int[]>(points, triangles);
+            return new Tuple<System.Numerics.Vector3[], int[]>(points, triangles);
         }
 
         private static float GetHeightAtPosition(float[] heightMap, int x, int y)
@@ -117,7 +117,7 @@ namespace InWorldz.PhysxPhysics.Meshing
             return heightMap[y * OpenSim.Framework.Constants.RegionSize + x];
         }
 
-        public Tuple<PhysX.TriangleMesh, MemoryStream> GenerateTrimeshFromIndexedTriangles(PhysX.Math.Vector3[] points, int[] triangles)
+        public Tuple<PhysX.TriangleMesh, MemoryStream> GenerateTrimeshFromIndexedTriangles(System.Numerics.Vector3[] points, int[] triangles)
         {
             PhysX.TriangleMeshDesc triangleMeshDesc = new PhysX.TriangleMeshDesc()
             {
@@ -126,7 +126,7 @@ namespace InWorldz.PhysxPhysics.Meshing
             };
 
             MemoryStream ms = new MemoryStream();
-            if (!_cooking.CookTriangleMesh(triangleMeshDesc, ms))
+            if (_cooking.CookTriangleMesh(triangleMeshDesc, ms) != PhysX.TriangleMeshCookingResult.Success)
             {
                 throw new PhysxSdkException("TerrainMesher: GenerateTrimeshFromIndexedTriangles(): CookTriangleMesh() failed");
             }

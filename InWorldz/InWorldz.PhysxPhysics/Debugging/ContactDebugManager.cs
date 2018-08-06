@@ -92,29 +92,29 @@ namespace InWorldz.PhysxPhysics.Debugging
         {
             if (_contactDebugStartedAt == 0) return;
 
-            if (contactPairHeader.Actors[0] == null || contactPairHeader.Actors[1] == null)
+            if (contactPairHeader.Actor0 == null || contactPairHeader.Actor1 == null)
             {
                 return;
             }
 
             foreach (var pair in pairs)
             {
-                if ((pair.Events & PhysX.PairFlag.NotifyTouchFound) != 0 || (pair.Events & PhysX.PairFlag.NotifyTouchPersists) != 0)
+                if ((pair.Flags & PhysX.ContactPairFlag.ActorPairHasFirstTouch) != 0 || (pair.Flags & PhysX.ContactPairFlag.ActorPairLostTouch) == 0)
                 {
                     int currCount = pair.ContactCount;
-                    if (_contactCounts.TryGetValue(contactPairHeader.Actors[0], out currCount))
+                    if (_contactCounts.TryGetValue(contactPairHeader.Actor0, out currCount))
                     {
                         currCount += pair.ContactCount;
                     }
 
-                    _contactCounts[contactPairHeader.Actors[0]] = currCount;
+                    _contactCounts[contactPairHeader.Actor0] = currCount;
 
-                    if (_contactCounts.TryGetValue(contactPairHeader.Actors[1], out currCount))
+                    if (_contactCounts.TryGetValue(contactPairHeader.Actor1, out currCount))
                     {
                         currCount += pair.ContactCount;
                     }
 
-                    _contactCounts[contactPairHeader.Actors[1]] = currCount;
+                    _contactCounts[contactPairHeader.Actor1] = currCount;
                 }
             }
         }

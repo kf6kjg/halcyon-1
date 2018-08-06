@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, InWorldz Halcyon Developers
  * All rights reserved.
  * 
@@ -43,6 +43,7 @@ using OpenSim.Framework;
 using System.Threading;
 using log4net;
 using System.Reflection;
+using InWorldz.Physxstatic;
 
 namespace InWorldz.PhysxPhysics
 {
@@ -404,17 +405,17 @@ namespace InWorldz.PhysxPhysics
             }
         }
 
-        internal PhysX.Math.Vector3 PhysxExtents
+        internal System.Numerics.Vector3 PhysxExtents
         {
             get
             {
                 if (HasActor)
                 {
-                    return _actor.WorldBounds.Extents;
+                    return _actor.GetWorldBounds().Extents;
                 }
                 else
                 {
-                    return _parentPrim._actor.WorldBounds.Extents;
+                    return _parentPrim._actor.GetWorldBounds().Extents;
                 }
             }
         }
@@ -806,52 +807,52 @@ namespace InWorldz.PhysxPhysics
         public override void CrossingFailure()
         {
            _scene.QueueCommand(
-               new Commands.GenericSyncCmd(this,
-                   (PhysxScene scene) => 
+           new Commands.GenericSyncCmd(this,
+            (PhysxScene scene) => 
+                {
+                    OpenMetaverse.Vector3 newPos = _position;
+                    //place this object back into the region
+                    if (_position.X > Constants.RegionSize - 1)
+                    {
+                    newPos.X = Constants.RegionSize - 1 - _actor.GetWorldBounds().Extents.X;
+                    }
+                    else if (_position.X <= 0f)
+                    {
+                        newPos.X = _actor.GetWorldBounds().Extents.X;
+                    }
+
+                    if (_position.Y > Constants.RegionSize - 1)
+                    {
+                        newPos.Y = Constants.RegionSize - 1 - _actor.GetWorldBounds().Extents.Y;
+                    }
+                    else if (_position.Y <= 0f)
+                    {
+                        newPos.Y = _actor.GetWorldBounds().Extents.Y;
+                    }
+
+                    //also make sure Z is above ground
+                    float groundHeight = _scene.TerrainChannel.CalculateHeightAt(newPos.X, newPos.Y);
+                    if (newPos.Z - _actor.GetWorldBounds().Extents.Z < groundHeight)
+                    {
+                        newPos.Z = groundHeight + _actor.GetWorldBounds().Extents.Z + 0.1f;
+                    }
+
+                    if (_dynActor != null)
+                    {
+                        bool wasKinematic = (_dynActor.RigidBodyFlags & PhysX.RigidBodyFlag.Kinematic) != 0;
+
+                       _dynActor.GlobalPose = PhysUtil.PositionToMatrix(newPos, _rotation);
+                       _velocity = OpenMetaverse.Vector3.Zero;
+                       _angularVelocity = OpenMetaverse.Vector3.Zero;
+
+                       if (!wasKinematic)
                        {
-                           OpenMetaverse.Vector3 newPos = _position;
-                           //place this object back into the region
-                           if (_position.X > Constants.RegionSize - 1)
-                           {
-                               newPos.X = Constants.RegionSize - 1 - _actor.WorldBounds.Extents.X;
-                           }
-                           else if (_position.X <= 0f)
-                           {
-                               newPos.X = _actor.WorldBounds.Extents.X;
-                           }
-
-                           if (_position.Y > Constants.RegionSize - 1)
-                           {
-                               newPos.Y = Constants.RegionSize - 1 - _actor.WorldBounds.Extents.Y;
-                           }
-                           else if (_position.Y <= 0f)
-                           {
-                               newPos.Y = _actor.WorldBounds.Extents.Y;
-                           }
-
-                           //also make sure Z is above ground
-                           float groundHeight = _scene.TerrainChannel.CalculateHeightAt(newPos.X, newPos.Y);
-                           if (newPos.Z - _actor.WorldBounds.Extents.Z < groundHeight)
-                           {
-                               newPos.Z = groundHeight + _actor.WorldBounds.Extents.Z + 0.1f;
-                           }
-
-                           if (_dynActor != null)
-                           {
-                               bool wasKinematic = (_dynActor.Flags & PhysX.RigidDynamicFlags.Kinematic) != 0;
-
-                               _dynActor.GlobalPose = PhysUtil.PositionToMatrix(newPos, _rotation);
-                               _velocity = OpenMetaverse.Vector3.Zero;
-                               _angularVelocity = OpenMetaverse.Vector3.Zero;
-
-                               if (!wasKinematic)
-                               {
-                                   _dynActor.AngularVelocity = PhysX.Math.Vector3.Zero;
-                                   _dynActor.LinearVelocity = PhysX.Math.Vector3.Zero;
-                                   _dynActor.PutToSleep();
-                               }
-                           }
+                           _dynActor.AngularVelocity = System.Numerics.Vector3.Zero;
+                           _dynActor.LinearVelocity = System.Numerics.Vector3.Zero;
+                           _dynActor.PutToSleep();
                        }
+                    }
+                }
             ));
         }
 
@@ -1325,7 +1326,7 @@ namespace InWorldz.PhysxPhysics
         {
             get
             {
-                return _dynActor != null && (_dynActor.Flags & PhysX.RigidDynamicFlags.Kinematic) == 0;
+                return _dynActor != null && (_dynActor.RigidBodyFlags & PhysX.RigidBodyFlag.Kinematic) == 0;
             }
         }
 
@@ -1373,7 +1374,7 @@ namespace InWorldz.PhysxPhysics
                 
                 if (frameNum != 0)
                 {
-                    if (_contactsKilledFor != 0 && _dynActor != null && (_dynActor.Flags & PhysX.RigidDynamicFlags.Kinematic) == 0)
+                    if (_contactsKilledFor != 0 && _dynActor != null && (_dynActor.RigidBodyFlags & PhysX.RigidBodyFlag.Kinematic) == 0)
                     {
                         if (_contactsKilledFor == CONTACTS_STAY_DEAD_FRAMES)
                         {
@@ -1388,7 +1389,7 @@ namespace InWorldz.PhysxPhysics
                         }
                     }
 
-                    if (_ccdSuspendedFor != 0 && _dynActor != null && (_dynActor.Flags & PhysX.RigidDynamicFlags.Kinematic) == 0)
+                    if (_ccdSuspendedFor != 0 && _dynActor != null && (_dynActor.RigidBodyFlags & PhysX.RigidBodyFlag.Kinematic) == 0)
                     {
                         if (--_ccdSuspendedFor == 1)
                         {
@@ -1466,13 +1467,13 @@ namespace InWorldz.PhysxPhysics
 
             if (IsFreeDynamic)
             {
-                PhysX.Math.Vector3 bb = _dynActor.WorldBounds.Extents * 2.0f;
+                System.Numerics.Vector3 bb = _dynActor.GetWorldBounds().Extents * 2.0f;
 
                 float fx = (float)_PrimRand.NextDouble() * (bb.X * MAX_DEPEN_MULTIPLIER - bb.X * MIN_DEPEN_MULTIPLIER) + bb.X * MIN_DEPEN_MULTIPLIER;
                 float fy = (float)_PrimRand.NextDouble() * (bb.Y * MAX_DEPEN_MULTIPLIER - bb.Y * MIN_DEPEN_MULTIPLIER) + bb.Y * MIN_DEPEN_MULTIPLIER;
                 float fz = (float)_PrimRand.NextDouble() * (bb.Z * MAX_DEPEN_MULTIPLIER - bb.Z) + bb.Z;
 
-                PhysX.Math.Vector3 f2 = new PhysX.Math.Vector3(fx,fy,fz);
+                System.Numerics.Vector3 f2 = new System.Numerics.Vector3(fx,fy,fz);
 
                 _dynActor.AddForce(f2, PhysX.ForceMode.VelocityChange, true);
             }
@@ -1636,7 +1637,7 @@ namespace InWorldz.PhysxPhysics
                         }
 
                         // m_log.DebugFormat("[Buoyancy] f={0} zvel={1} dp={2} at {3} b={4} gm={5}", force, _dynActor.LinearVelocity.Z, _positiondeltaz, _position, _properties.Buoyancy, _properties.Material.GravityMultiplier);
-                        _dynActor.AddForce(new PhysX.Math.Vector3(0.0f, 0.0f, force * timeStep), PhysX.ForceMode.Impulse, true);
+                        _dynActor.AddForce(new System.Numerics.Vector3(0.0f, 0.0f, force * timeStep), PhysX.ForceMode.Impulse, true);
                         _lastposition = _position;
                     }
                 }
@@ -1801,7 +1802,7 @@ namespace InWorldz.PhysxPhysics
             }
             else
             {
-                bool isKinematic = (_dynActor.Flags & PhysX.RigidDynamicFlags.Kinematic) != 0;
+                bool isKinematic = (_dynActor.RigidBodyFlags & PhysX.RigidBodyFlag.Kinematic) != 0;
 
                 if (isKinematic)
                 {
@@ -1850,8 +1851,8 @@ namespace InWorldz.PhysxPhysics
 
         public override void AddForceSync(OpenMetaverse.Vector3 force, OpenMetaverse.Vector3 forceOffset, ForceType type)
         {
-            PhysX.Math.Vector3 pforce  = PhysUtil.OmvVectorToPhysx(force);
-            PhysX.Math.Vector3 poffset = PhysUtil.OmvVectorToPhysx(forceOffset);
+            System.Numerics.Vector3 pforce  = PhysUtil.OmvVectorToPhysx(force);
+            System.Numerics.Vector3 poffset = PhysUtil.OmvVectorToPhysx(forceOffset);
 
             //these property setter force types need to be set and assigned regardless
             //of if the object is currently a free dynamic
@@ -1901,7 +1902,7 @@ namespace InWorldz.PhysxPhysics
                         break;
 
                     case ForceType.GlobalLinearImpulse:
-                        if (poffset == PhysX.Math.Vector3.Zero)
+                        if (poffset == System.Numerics.Vector3.Zero)
                             _dynActor.AddForce(pforce, PhysX.ForceMode.Impulse, true);
                         else
                             _dynActor.AddForceAtLocalPosition(pforce, poffset, PhysX.ForceMode.Impulse, true);
@@ -1992,7 +1993,7 @@ namespace InWorldz.PhysxPhysics
             bool delayInertiaRecalc)
         {
             //calculate the local rotation for the new shape we'll add to replace the combined child
-            PhysX.Math.Matrix localPose = PhysUtil.PositionToMatrix(localPos, localRot);
+            System.Numerics.Matrix4x4 localPose = PhysUtil.PositionToMatrix(localPos, localRot);
 
             if (!_isPhysical || this.CheckComplexityLimitsWithNewChild(childShape))
             {
@@ -2098,7 +2099,7 @@ namespace InWorldz.PhysxPhysics
             _centerOfMassLocalPose = PhysUtil.MatrixToPose(_dynActor.CenterOfMassLocalPose);
             _massSpaceInertiaTensor = PhysUtil.PhysxVectorToOmv(_dynActor.MassSpaceInertiaTensor);
 
-            PhysX.Math.Vector3 bbExtents = _dynActor.WorldBounds.Extents;
+            System.Numerics.Vector3 bbExtents = _dynActor.GetWorldBounds().Extents;
 
             float bbLen = bbExtents.Length() * 2;
             if (_centerOfMassLocalPose.Position.Length() / bbLen > CENTER_OF_MASS_POS_TOLERANCE)    //check if the center of mass is too far off in general
@@ -2148,7 +2149,7 @@ namespace InWorldz.PhysxPhysics
             RelatedShapes childShapes;
             if (_childShapes.TryGetValue(child, out childShapes))
             {
-                PhysX.Math.Matrix pose = PhysUtil.PositionToMatrix(newOffset, rotOffset);
+                System.Numerics.Matrix4x4 pose = PhysUtil.PositionToMatrix(newOffset, rotOffset);
                 foreach (PhysX.Shape shape in childShapes.PhyShapes)
                 {
                     shape.LocalPose = pose;
@@ -2508,8 +2509,8 @@ namespace InWorldz.PhysxPhysics
         /// <param name="pairs"></param>
         internal void OnContactChangeSync(PhysX.ContactPairHeader contactPairHeader, PhysX.ContactPair[] pairs, int actorIndex)
         {
-            if (contactPairHeader.Actors[0] == null || contactPairHeader.Actors[0].UserData == null ||
-                contactPairHeader.Actors[1] == null || contactPairHeader.Actors[1].UserData == null)
+            if (contactPairHeader.Actor0 == null || contactPairHeader.Actor0.UserData == null ||
+                contactPairHeader.Actor1 == null || contactPairHeader.Actor1.UserData == null)
             {
                 return;
             }
@@ -2520,7 +2521,7 @@ namespace InWorldz.PhysxPhysics
             }
             else
             {
-                object[] userData = new object[] { contactPairHeader.Actors[0].UserData, contactPairHeader.Actors[1].UserData };
+                object[] userData = { contactPairHeader.Actor0.UserData, contactPairHeader.Actor1.UserData };
 
                 if (Util.AllAre<object, PhysxPrim>(userData))
                 {
@@ -2561,17 +2562,17 @@ namespace InWorldz.PhysxPhysics
 
         private void ProcessGroundCollisionLocally(PhysX.ContactPair pair, OpenMetaverse.Vector3 currentLoc)
         {
-            if ((pair.Events & PhysX.PairFlag.NotifyTouchFound) != 0)
+            if ((pair.Flags & PhysX.ContactPairFlag.ActorPairHasFirstTouch) != 0)
             {
                 _groundTouchCounts++;
             }
-            else if ((pair.Events & PhysX.PairFlag.NotifyTouchLost) != 0)
+            else if ((pair.Flags & PhysX.ContactPairFlag.ActorPairLostTouch) != 0)
             {
                 if (_groundTouchCounts > 0) _groundTouchCounts--;
             }
 
             //count a ground collision only if the object is registering its first touch here.
-            if (_groundTouchCounts == 1 && (pair.Events & PhysX.PairFlag.NotifyTouchFound) != 0)
+            if (_groundTouchCounts == 1 && (pair.Flags & PhysX.ContactPairFlag.ActorPairHasFirstTouch) != 0)
             {
                 SendCollisionUpdate(new CollisionEventUpdate
                 {
@@ -2603,7 +2604,14 @@ namespace InWorldz.PhysxPhysics
             }
 
             PhysxCharacter other;
-            other = contactPairHeader.Actors[ourActorIndex == 0 ? 1 : 0].UserData as PhysxCharacter;
+            if (ourActorIndex == 0)
+            {
+                other = contactPairHeader.Actor1.UserData as PhysxCharacter;
+            }
+            else
+            {
+                other = contactPairHeader.Actor0.UserData as PhysxCharacter;
+            }
 
             if (other == null)
             {
@@ -2620,21 +2628,21 @@ namespace InWorldz.PhysxPhysics
 
                 if (prim != null && other != null)
                 {
-                    prim.ProcessCharacterContactChange((pair.Events & PhysX.PairFlag.NotifyTouchFound) != 0 ? 1 : -1, prim, ourShape, other);
+                    prim.ProcessCharacterContactChange((pair.Flags & PhysX.ContactPairFlag.ActorPairHasFirstTouch) != 0 ? 1 : -1, prim, ourShape, other);
                 }
             }
         }
 
         private bool TryFindOurShape(PhysX.ContactPair pair, ref PhysxPrim prim, ref PhysX.Shape ourShape)
         {
-            if (pair.Shapes[0] != null && _shapeToPrimIndex.TryGetValue(pair.Shapes[0], out prim))
+            if (pair.Shape0 != null && _shapeToPrimIndex.TryGetValue(pair.Shape0, out prim))
             {
-                ourShape = pair.Shapes[0];
+                ourShape = pair.Shape0;
                 return true;
             }
-            else if (pair.Shapes[1] != null && _shapeToPrimIndex.TryGetValue(pair.Shapes[1], out prim))
+            else if (pair.Shape1 != null && _shapeToPrimIndex.TryGetValue(pair.Shape1, out prim))
             {
-                ourShape = pair.Shapes[1];
+                ourShape = pair.Shape1;
                 return true;
             }
 
@@ -2678,8 +2686,8 @@ namespace InWorldz.PhysxPhysics
         private void HandleContactChangeWithOtherPrim(PhysX.ContactPairHeader contactPairHeader, PhysX.ContactPair[] pairs)
         {
             //if any deletions happen, we should've been informed by other means
-            if ((contactPairHeader.Flags & PhysX.ContactPairHeaderFlag.DeletedActor0) != 0 ||
-                (contactPairHeader.Flags & PhysX.ContactPairHeaderFlag.DeletedActor1) != 0)
+            if ((contactPairHeader.Flags & PhysX.ContactPairHeaderFlag.RemovedActor0) != 0 ||
+                (contactPairHeader.Flags & PhysX.ContactPairHeaderFlag.RemovedActor1) != 0)
             {
                 return;
             }
@@ -2697,21 +2705,21 @@ namespace InWorldz.PhysxPhysics
             foreach (PhysX.ContactPair pair in pairs)
             {
                 //if any deletions happen, we should've been informed by other means
-                if ((pair.Flags & PhysX.ContactPairFlag.DeletedShape0) != 0 ||
-                    (pair.Flags & PhysX.ContactPairFlag.DeletedShape1) != 0)
+                if ((pair.Flags & PhysX.ContactPairFlag.RemovedShape0) != 0 ||
+                    (pair.Flags & PhysX.ContactPairFlag.RemovedShape1) != 0)
                 {
                     continue;
                 }
 
                 PhysxPrim prim = null;
                 PhysxPrim other = null;
-                if (_shapeToPrimIndex.TryGetValue(pair.Shapes[0], out prim))
+                if (_shapeToPrimIndex.TryGetValue(pair.Shape0, out prim))
                 {
-                    other = pair.Shapes[1].Actor.UserData as PhysxPrim;
+                    other = pair.Shape1.Actor.UserData as PhysxPrim;
                 }
-                else if (_shapeToPrimIndex.TryGetValue(pair.Shapes[1], out prim))
+                else if (_shapeToPrimIndex.TryGetValue(pair.Shape1, out prim))
                 {
-                    other = pair.Shapes[0].Actor.UserData as PhysxPrim;
+                    other = pair.Shape0.Actor.UserData as PhysxPrim;
                 }
 
                 if (other != null && other.CollisionGrp == CollisionGroupFlag.PhysicalPhantom)
@@ -2724,11 +2732,11 @@ namespace InWorldz.PhysxPhysics
                 if (prim != null && other != null)
                 {
                     int change = 0;
-                    if ((pair.Events & PhysX.PairFlag.NotifyTouchFound) != 0)
+                    if ((pair.Flags & PhysX.ContactPairFlag.ActorPairHasFirstTouch) != 0)
                     {
                         change++;
                     }
-                    if ((pair.Events & PhysX.PairFlag.NotifyTouchLost) != 0)
+                    if ((pair.Flags & PhysX.ContactPairFlag.ActorPairLostTouch) != 0)
                     {
                         change--;
                     }
@@ -3066,7 +3074,7 @@ namespace InWorldz.PhysxPhysics
             PhysX.Material[] materialArr = new PhysX.Material[] { material.PhyMaterial };
             foreach (PhysX.Shape shape in shapes)
             {
-                shape.SetMaterials(materialArr);
+                shape.Materials = materialArr;
             }
 
             if (oldMaterial.Density != material.Density) UpdateMassAndInertia();
@@ -3141,7 +3149,7 @@ namespace InWorldz.PhysxPhysics
 
                 if (_isPhysical)
                 {
-                    _dynActor.Flags = _dynActor.Flags | PhysX.RigidDynamicFlags.Kinematic;
+                    _dynActor.RigidBodyFlags |= PhysX.RigidBodyFlag.Kinematic;
                     if (_vehicleDynamics != null)
                     {
                         _vehicleDynamics.OnPhysicsSuspended();
@@ -3197,7 +3205,7 @@ namespace InWorldz.PhysxPhysics
                         DoResumeInterpolation();
                     }
 
-                    _dynActor.Flags = _dynActor.Flags & ~PhysX.RigidDynamicFlags.Kinematic;
+                    _dynActor.RigidBodyFlags &= ~PhysX.RigidBodyFlag.Kinematic;
 
                     //kick the prim to resume its velocity
                     _dynActor.AngularVelocity = PhysUtil.OmvVectorToPhysx(_angularVelocity);
@@ -3504,7 +3512,7 @@ namespace InWorldz.PhysxPhysics
                 {
                     CollectShapesForSerialization(shapes, coll);
 
-                    if (coll.GetNumberOfObjects() > 0)
+                    if (coll.NumberOfObjects > 0)
                     {
                         using (System.IO.MemoryStream memStream = new System.IO.MemoryStream())
                         {
@@ -3535,11 +3543,11 @@ namespace InWorldz.PhysxPhysics
                 switch (shape.GeometryType)
                 {
                     case PhysX.GeometryType.ConvexMesh:
-                        ((PhysX.ConvexMeshGeometry)shape.Geom).ConvexMesh.AsSerializable().CollectForExport(coll);
+                        ((PhysX.ConvexMeshGeometry)shape.GetGeometry()).ConvexMesh.AsSerializable().CollectForExport(coll);
                         break;
 
                     case PhysX.GeometryType.TriangleMesh:
-                        ((PhysX.TriangleMeshGeometry)shape.Geom).TriangleMesh.AsSerializable().CollectForExport(coll);
+                        ((PhysX.TriangleMeshGeometry)shape.GetGeometry()).TriangleMesh.AsSerializable().CollectForExport(coll);
                         break;
                 }
             }

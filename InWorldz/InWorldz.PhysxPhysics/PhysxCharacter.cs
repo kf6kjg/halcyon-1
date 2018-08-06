@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, InWorldz Halcyon Developers
  * All rights reserved.
  * 
@@ -35,6 +35,7 @@ using System.Text;
 using OpenSim.Region.Physics.Manager;
 using log4net;
 using System.Reflection;
+using InWorldz.Physxstatic;
 
 namespace InWorldz.PhysxPhysics
 {
@@ -167,7 +168,7 @@ namespace InWorldz.PhysxPhysics
             = new PhysX.ControllerFilters
             {
                 ActiveGroups = (int)(CollisionGroupFlag.Character | CollisionGroupFlag.Ground | CollisionGroupFlag.Normal),
-                FilterFlags = PhysX.SceneQueryFilterFlag.Static | PhysX.SceneQueryFilterFlag.Dynamic | PhysX.SceneQueryFilterFlag.Prefilter,
+                FilterFlags = PhysX.QueryFlag.Static | PhysX.QueryFlag.Dynamic | PhysX.QueryFlag.Prefilter,
                 FilterData = CollisionGroup.GetFilterData((uint)(PhysX.PairFlag.NotifyTouchFound | PhysX.PairFlag.NotifyTouchLost), 0, CollisionGroupFlag.Character)
             };
 
@@ -222,13 +223,12 @@ namespace InWorldz.PhysxPhysics
                 Height = this.CapsuleHeight,
                 Radius = _radius,
                 StepOffset = STEP_OFFSET,
-                UpDirection = new PhysX.Math.Vector3(0.0f, 0.0f, 1.0f),
+                UpDirection = new System.Numerics.Vector3(0.0f, 0.0f, 1.0f),
                 Position = PhysUtil.OmvVectorToPhysx(position),
                 Material = scene.DEFAULT_MATERIAL,
-                InteractionMode = PhysX.CCTInteractionMode.Include,
                 SlopeLimit = (float)Math.Cos(OpenMetaverse.Utils.DEG_TO_RAD * MAX_WALKABLE_SLOPE),
                 ContactOffset = CONTACT_OFFSET,
-                Callback = _hitReportDelegator,
+                ReportCallback = _hitReportDelegator,
                 BehaviorCallback = _rideOnBehavior
             };
 
@@ -237,7 +237,7 @@ namespace InWorldz.PhysxPhysics
 
             DoZDepenetration();
 
-            _controller.ShapeFilterData = CollisionGroup.GetFilterData((uint)(PhysX.PairFlag.NotifyTouchFound | PhysX.PairFlag.NotifyTouchLost),
+            _controller.Shape.QueryFilterData = CollisionGroup.GetFilterData((uint)(PhysX.PairFlag.NotifyTouchFound | PhysX.PairFlag.NotifyTouchLost),
                 0, CollisionGroupFlag.Character);
             
             _lastSync = (uint)Environment.TickCount;
@@ -282,7 +282,12 @@ namespace InWorldz.PhysxPhysics
             {
                 foundOverlap = false;
                 OpenMetaverse.Vector3 translatedPose = pos + offset;
-                PhysX.Shape[] overlap = _scene.SceneImpl.OverlapMultiple(avaGeom, PhysUtil.PositionToMatrix(translatedPose, capsuleRot));
+                PhysX.Shape[] overlap = _scene.SceneImpl.Overlap(
+                    avaGeom,
+                    PhysUtil.PositionToMatrix(translatedPose, capsuleRot),
+                    1, // Maximum overlaps
+                    null /* TODO NEEDS CALLBACK */
+                );
 
                 if (overlap == null)
                 {
@@ -821,7 +826,7 @@ namespace InWorldz.PhysxPhysics
             }
 
             OpenMetaverse.Vector3 lastPosition = _position;
-            PhysX.ControllerFlag flags = _controller.Move(PhysUtil.OmvVectorToPhysx(vCombined), TimeSpan.FromSeconds(secondsSinceLastSync), 0.001f, FILTERS);
+            var flags = _controller.Move(PhysUtil.OmvVectorToPhysx(vCombined), TimeSpan.FromSeconds(secondsSinceLastSync), 0.001f, FILTERS);
             _position = PhysUtil.PhysxVectorToOmv(_controller.Position);
             _lastSync = (uint)Environment.TickCount;
 
@@ -831,7 +836,7 @@ namespace InWorldz.PhysxPhysics
             //m_log.InfoFormat("vColl {0} {1} PosDiff: {2} Expected: {3}", vColl, flags, _position - lastPosition, vCombined);
             //m_log.DebugFormat("[CHAR]: vColl: {0}", vColl);
 
-            bool collidingDown = (flags & PhysX.ControllerFlag.Down) != 0;
+            bool collidingDown = (flags & PhysX.ControllerCollisionFlag.Down) != 0;
             if (!collidingDown) _rideOnBehavior.AvatarNotStandingOnPrim();
 
             //negative z in vcoll while colliding down is due to gravity/ground collision, dont report it
@@ -1423,7 +1428,7 @@ namespace InWorldz.PhysxPhysics
 
         private void UpdateCollisionPlane(PhysX.ControllerShapeHit hit)
         {
-            if (hit.Direction == -PhysX.Math.Vector3.UnitZ)
+            if (hit.Direction == -System.Numerics.Vector3.UnitZ)
             {
                 var omvNorm = PhysUtil.PhysxVectorToOmv(hit.WorldNormal);
 
@@ -1478,16 +1483,16 @@ namespace InWorldz.PhysxPhysics
         /// <param name="pairNumber">The index number where theis character appears in the pair</param>
         internal void OnContactChangeSync(PhysX.ContactPairHeader contactPairHeader, PhysX.ContactPair[] pairs, int ourActorIndex)
         {
-            if ((contactPairHeader.Flags & PhysX.ContactPairHeaderFlag.DeletedActor0) != 0 ||
-                (contactPairHeader.Flags & PhysX.ContactPairHeaderFlag.DeletedActor1) != 0)
+            if ((contactPairHeader.Flags & PhysX.ContactPairHeaderFlag.RemovedActor0) != 0 ||
+                (contactPairHeader.Flags & PhysX.ContactPairHeaderFlag.RemovedActor1) != 0)
             {
                 return;
             }
 
             foreach (var pair in pairs)
             {
-                PhysX.Shape shape0 = pair.Shapes[0];
-                PhysX.Shape shape1 = pair.Shapes[1];
+                PhysX.Shape shape0 = pair.Shape0;
+                PhysX.Shape shape1 = pair.Shape1;
                 if ((shape0 == null) || (shape1 == null))
                     continue;
 
@@ -1503,14 +1508,13 @@ namespace InWorldz.PhysxPhysics
 
                 //m_log.DebugFormat("[CHAR]: Collision: {0}", pair.Events);
 
-                PhysxPrim colPrim = otherShape.Actor.UserData as PhysxPrim;
-                if (colPrim != null)
+                if (otherShape.Actor.UserData is PhysxPrim colPrim)
                 {
-                    if ((pair.Events & PhysX.PairFlag.NotifyTouchFound) != 0)
+                    if ((pair.Flags & PhysX.ContactPairFlag.ActorPairHasFirstTouch) != 0)
                     {
                         AddExternalCollidingPrimShape(otherShape, colPrim);
                     }
-                    else if ((pair.Events & PhysX.PairFlag.NotifyTouchLost) != 0)
+                    else if ((pair.Flags & PhysX.ContactPairFlag.ActorPairLostTouch) != 0)
                     {
                         SetToRemoveAfterReport(otherShape, colPrim);
                     }

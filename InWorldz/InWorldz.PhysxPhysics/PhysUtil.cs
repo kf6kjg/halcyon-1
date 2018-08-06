@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, InWorldz Halcyon Developers
  * All rights reserved.
  * 
@@ -31,85 +31,85 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
-using OpenMetaverse;
 
-namespace InWorldz.PhysxPhysics
+namespace InWorldz.Physxstatic
 {
-    internal class PhysUtil
+    internal static class PhysUtil
     {
-        public static PhysX.Math.Vector3[] OmvVectorArrayToPhysx(OpenMetaverse.Vector3[] omvArray)
+        public static Vector3[] OmvVectorArrayToPhysx(OpenMetaverse.Vector3[] omvArray)
         {
-            PhysX.Math.Vector3[] physxArray = new PhysX.Math.Vector3[omvArray.Length];
+            Vector3[] physxArray = new Vector3[omvArray.Length];
 
             for (int i = 0; i < omvArray.Length; ++i)
             {
                 OpenMetaverse.Vector3 omvVec = omvArray[i];
-                physxArray[i] = new PhysX.Math.Vector3(omvVec.X, omvVec.Y, omvVec.Z);
+                physxArray[i] = new Vector3(omvVec.X, omvVec.Y, omvVec.Z);
             }
 
             return physxArray;
         }
 
-        public static PhysX.Math.Vector3[] FloatArrayToVectorArray(float[] floatArray)
+        public static Vector3[] FloatArrayToVectorArray(float[] floatArray)
         {
             if (floatArray.Length % 3 != 0)
                 throw new InvalidOperationException("Float array size must be a multiple of 3 (X,Y,Z)");
 
-            PhysX.Math.Vector3[] ret = new PhysX.Math.Vector3[floatArray.Length / 3];
+            Vector3[] ret = new Vector3[floatArray.Length / 3];
 
             for (int i = 0, j = 0; i < floatArray.Length; i += 3, ++j)
             {
-                ret[j] = new PhysX.Math.Vector3(floatArray[i + 0], floatArray[i + 1], floatArray[i + 2]);
+                ret[j] = new Vector3(floatArray[i + 0], floatArray[i + 1], floatArray[i + 2]);
             }
 
             return ret;
         }
 
-        public static PhysX.Math.Vector3 OmvVectorToPhysx(OpenMetaverse.Vector3 vec)
+        public static Vector3 OmvVectorToPhysx(OpenMetaverse.Vector3 vec)
         {
             MakeFinite(ref vec);
-            return new PhysX.Math.Vector3(vec.X, vec.Y, vec.Z);
+            return new Vector3(vec.X, vec.Y, vec.Z);
         }
 
-        public static OpenMetaverse.Vector3 PhysxVectorToOmv(PhysX.Math.Vector3 vec)
+        public static OpenMetaverse.Vector3 PhysxVectorToOmv(Vector3 vec)
         {
             return new OpenMetaverse.Vector3(vec.X, vec.Y, vec.Z);
         }
 
-        public static PhysX.Math.Matrix PositionToMatrix(OpenMetaverse.Vector3 position, OpenMetaverse.Quaternion rotation)
+        public static Matrix4x4 PositionToMatrix(OpenMetaverse.Vector3 position, OpenMetaverse.Quaternion rotation)
         {
             MakeFinite(ref position);
             MakeFinite(ref rotation);
 
-            return PhysX.Math.Matrix.RotationQuaternion(new PhysX.Math.Quaternion(rotation.X, rotation.Y, rotation.Z, rotation.W)) *
-                        PhysX.Math.Matrix.Translation(position.X, position.Y, position.Z);
+            return Matrix4x4.CreateFromQuaternion(new Quaternion(rotation.X, rotation.Y, rotation.Z, rotation.W)) *
+                         Matrix4x4.CreateTranslation(position.X, position.Y, position.Z);
         }
 
-        private static void MakeFinite(ref Quaternion rotation)
+        private static void MakeFinite(ref OpenMetaverse.Quaternion rotation)
         {
             if (float.IsNaN(rotation.X) || float.IsInfinity(rotation.X))
             {
-                rotation = Quaternion.Identity;
+                rotation = OpenMetaverse.Quaternion.Identity;
             }
 
             if (float.IsNaN(rotation.Y) || float.IsInfinity(rotation.Y))
             {
-                rotation = Quaternion.Identity;
+                rotation = OpenMetaverse.Quaternion.Identity;
             }
 
             if (float.IsNaN(rotation.Z) || float.IsInfinity(rotation.Z))
             {
-                rotation = Quaternion.Identity;
+                rotation = OpenMetaverse.Quaternion.Identity;
             }
 
             if (float.IsNaN(rotation.W) || float.IsInfinity(rotation.W))
             {
-                rotation = Quaternion.Identity;
+                rotation = OpenMetaverse.Quaternion.Identity;
             }
         }
 
-        private static void MakeFinite(ref Vector3 position)
+        private static void MakeFinite(ref OpenMetaverse.Vector3 position)
         {
             if (float.IsNaN(position.X) || float.IsInfinity(position.X))
             {
@@ -127,18 +127,18 @@ namespace InWorldz.PhysxPhysics
             }
         }
 
-        public static OpenMetaverse.Vector3 DecomposeToPosition(PhysX.Math.Matrix matrix)
+        public static OpenMetaverse.Vector3 DecomposeToPosition(Matrix4x4 matrix)
         {
             return new OpenMetaverse.Vector3(matrix.M41, matrix.M42, matrix.M43);
         }
 
-        public static OpenMetaverse.Quaternion DecomposeToRotation(PhysX.Math.Matrix matrix)
+        public static OpenMetaverse.Quaternion DecomposeToRotation(Matrix4x4 matrix)
         {
-            PhysX.Math.Quaternion physxRot = PhysX.Math.Quaternion.RotationMatrix(matrix);
+            Quaternion physxRot = Quaternion.CreateFromRotationMatrix(matrix);
             return new OpenMetaverse.Quaternion(physxRot.X, physxRot.Y, physxRot.Z, physxRot.W);
         }
 
-        public static OpenSim.Region.Physics.Manager.Pose MatrixToPose(PhysX.Math.Matrix matrix)
+        public static OpenSim.Region.Physics.Manager.Pose MatrixToPose(Matrix4x4 matrix)
         {
             OpenSim.Region.Physics.Manager.Pose pose;
             pose.Position = DecomposeToPosition(matrix);
@@ -153,7 +153,7 @@ namespace InWorldz.PhysxPhysics
             double aa   = (a.X * a.X + a.Y * a.Y + a.Z * a.Z + a.W * a.W);
             double bb   = (b.X * b.X + b.Y * b.Y + b.Z * b.Z + b.W * b.W);
             double aabb = aa * bb;
-            if (aabb == 0) return 0.0f;
+            if (Math.Abs(aabb) < 0.00001) return 0.0f; // 0.00001 is a best hipshot guess for epsilon.
 
             double ab = (a.X * b.X + a.Y * b.Y + a.Z * b.Z + a.W * b.W);
             double quotient = (ab * ab) / aabb;
@@ -223,7 +223,7 @@ namespace InWorldz.PhysxPhysics
             if (rot.W < 0f)
             {
                 //negate to prevent NaN in sqrt after normalization is applied
-                rot = Quaternion.Negate(rot);
+                rot = OpenMetaverse.Quaternion.Negate(rot);
             }
 
             if (rot.W > 1) // normalization needed
@@ -259,7 +259,7 @@ namespace InWorldz.PhysxPhysics
         {
             OpenMetaverse.Vector3 v = new OpenMetaverse.Vector3(0.0f, 0.0f, 1.0f) * r;   // Z axis unit vector unaffected by Z rotation component of r.
             double m = OpenMetaverse.Vector3.Mag(v);                       // Just in case v isn't normalized, need magnitude for Asin() operation later.
-            if (m == 0.0) return new OpenMetaverse.Vector3();
+            if (Math.Abs(m) < 0.00001) return new OpenMetaverse.Vector3();
             double x = Math.Atan2(-v.Y, v.Z);
             double sin = v.X / m;
             if (sin < -0.999999 || sin > 0.999999) x = 0.0;     // Force X rotation to 0 at the singularities.

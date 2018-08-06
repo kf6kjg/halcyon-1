@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, InWorldz Halcyon Developers
  * All rights reserved.
  * 
@@ -68,7 +68,7 @@ namespace InWorldz.PhysxPhysics
             if (groundActor == null)
             {
                 //cache load failed/not valid, calculate
-                Tuple<PhysX.Math.Vector3[], int[]> indexedTris = _terrainMesher.GenerateTrimeshDataFromHeightmap(heightMap);
+                Tuple<System.Numerics.Vector3[], int[]> indexedTris = _terrainMesher.GenerateTrimeshDataFromHeightmap(heightMap);
                 groundActor = GenerateGroundActorFromIndexedTriangles(indexedTris.Item1, indexedTris.Item2, revision);
             }
 
@@ -131,7 +131,7 @@ namespace InWorldz.PhysxPhysics
 
         
 
-        private Tuple<PhysX.RigidActor, PhysX.Shape, PhysX.TriangleMesh> GenerateGroundActorFromIndexedTriangles(PhysX.Math.Vector3[] points, int[] triangles,
+        private Tuple<PhysX.RigidActor, PhysX.Shape, PhysX.TriangleMesh> GenerateGroundActorFromIndexedTriangles(System.Numerics.Vector3[] points, int[] triangles,
             int revision)
         {
             Tuple<PhysX.TriangleMesh, MemoryStream> trimeshData = _terrainMesher.GenerateTrimeshFromIndexedTriangles(points, triangles);
@@ -166,7 +166,7 @@ namespace InWorldz.PhysxPhysics
 
         private void GenerateActorsFromTrimesh(PhysX.TriangleMeshGeometry triangleMeshShapeDesc, out PhysX.RigidActor hfActor, out PhysX.Shape shape)
         {
-            //PhysX.Math.Matrix.RotationYawPitchRoll(0f, (float)Math.PI / 2, 0f) * PhysX.Math.Matrix.Translation(0f, 0f, 0f)
+            //System.Numerics.Matrix.RotationYawPitchRoll(0f, (float)Math.PI / 2, 0f) * System.Numerics.Matrix.Translation(0f, 0f, 0f)
 
             //PhysX.RigidDynamic dynActor = _scene.Physics.CreateRigidDynamic();
             //dynActor.Flags |= PhysX.RigidDynamicFlags.Kinematic;

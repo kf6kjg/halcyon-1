@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, InWorldz Halcyon Developers
  * All rights reserved.
  * 
@@ -68,18 +68,18 @@ namespace InWorldz.PhysxPhysics.Commands
              */
             if (_actor.DynActorImpl != null && _actor.IsPhysical)
             {
-                bool wasKinematic = (_actor.DynActorImpl.Flags & PhysX.RigidDynamicFlags.Kinematic) != 0;
+                bool wasKinematic = (_actor.DynActorImpl.RigidBodyFlags & PhysX.RigidBodyFlag.Kinematic) != 0;
 
                 if (wasKinematic != _kinematic)
                 {
                     if (!wasKinematic)
                     {
                         _actor.DynActorImpl.ClearForce();
-                        _actor.DynActorImpl.LinearVelocity = new PhysX.Math.Vector3();
-                        _actor.DynActorImpl.AngularVelocity = new PhysX.Math.Vector3();
+                        _actor.DynActorImpl.LinearVelocity = new System.Numerics.Vector3();
+                        _actor.DynActorImpl.AngularVelocity = new System.Numerics.Vector3();
                     }
 
-                    _actor.DynActorImpl.Flags = _kinematic ? _actor.DynActorImpl.Flags | PhysX.RigidDynamicFlags.Kinematic : _actor.DynActorImpl.Flags & ~PhysX.RigidDynamicFlags.Kinematic;
+                    _actor.DynActorImpl.RigidBodyFlags = _kinematic ? _actor.DynActorImpl.RigidBodyFlags | PhysX.RigidBodyFlag.Kinematic : _actor.DynActorImpl.RigidBodyFlags & ~PhysX.RigidBodyFlag.Kinematic;
                     _actor.SyncWithPhysics(0.0f, 0, 0);
 
                     if (_kinematic)

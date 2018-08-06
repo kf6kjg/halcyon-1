@@ -141,32 +141,32 @@ namespace OpenSim.Region.Physics.BasicPhysicsPlugin
             //place this object back into the region
             if (_position.X > Constants.RegionSize - 1)
             {
-                newPos.X = Constants.RegionSize - 1/* - _actor.WorldBounds.Extents.X*/;
+                newPos.X = Constants.RegionSize - 1/* - _actor.GetWorldBounds().Extents.X*/;
             }
             else if (_position.X <= 0f)
             {
-                newPos.X = 0.0f/*_actor.WorldBounds.Extents.X*/;
+                newPos.X = 0.0f/*_actor.GetWorldBounds().Extents.X*/;
             }
 
             if (_position.Y > Constants.RegionSize - 1)
             {
-                newPos.Y = Constants.RegionSize - 1/* - _actor.WorldBounds.Extents.Y*/;
+                newPos.Y = Constants.RegionSize - 1/* - _actor.GetWorldBounds().Extents.Y*/;
             }
             else if (_position.Y <= 0f)
             {
-                newPos.Y = 0.0f/*_actor.WorldBounds.Extents.Y*/;
+                newPos.Y = 0.0f/*_actor.GetWorldBounds().Extents.Y*/;
             }
 
             //also make sure Z is above ground
             float groundHeight = _scene.TerrainChannel.CalculateHeightAt(newPos.X, newPos.Y);
-            if (newPos.Z/* - _actor.WorldBounds.Extents.Z*/ < groundHeight)
+            if (newPos.Z/* - _actor.GetWorldBounds().Extents.Z*/ < groundHeight)
             {
-                newPos.Z = groundHeight/* + _actor.WorldBounds.Extents.Z*/ + 0.1f;
+                newPos.Z = groundHeight/* + _actor.GetWorldBounds().Extents.Z*/ + 0.1f;
             }
             /*
             if (_dynActor != null)
             {
-                bool wasKinematic = (_dynActor.Flags & PhysX.RigidDynamicFlags.Kinematic) != 0;
+                bool wasKinematic = (_dynActor.RigidBodyFlags & PhysX.RigidBodyFlag.Kinematic) != 0;
 
                 _dynActor.GlobalPose = PhysUtil.PositionToMatrix(newPos, _rotation);
                 _velocity = OpenMetaverse.Vector3.Zero;

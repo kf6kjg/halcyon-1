@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, InWorldz Halcyon Developers
  * All rights reserved.
  * 
@@ -36,6 +36,7 @@ using System.Runtime.InteropServices;
 using ProtoBuf;
 using log4net;
 using System.Reflection;
+using InWorldz.Physxstatic;
 
 namespace InWorldz.PhysxPhysics.Meshing
 {
@@ -45,7 +46,7 @@ namespace InWorldz.PhysxPhysics.Meshing
         [ProtoMember(1, IsRequired = true)]
         public float[] _rawVerts;
 
-        public PhysX.Math.Vector3[] Vertices;
+        public System.Numerics.Vector3[] Vertices;
 
         [ProtoMember(2, IsRequired=true)]
         public int[] Indicies;
@@ -54,10 +55,10 @@ namespace InWorldz.PhysxPhysics.Meshing
         {
             foreach (HacdConvexHull hull in hulls)
             {
-                PhysX.Math.Vector3[] vertices = hull.Vertices;
+                System.Numerics.Vector3[] vertices = hull.Vertices;
                 for (int i = 0; i < vertices.Length; ++i)
                 {
-                    PhysX.Math.Vector3 vert = vertices[i];
+                    System.Numerics.Vector3 vert = vertices[i];
                     vert.X *= scale.X;
                     vert.Y *= scale.Y;
                     vert.Z *= scale.Z;
@@ -83,11 +84,11 @@ namespace InWorldz.PhysxPhysics.Meshing
                 HacdConvexHull newHull = new HacdConvexHull();
                 newHull.Indicies = (int[])nextHull.Indicies.Clone();
 
-                newHull.Vertices = new PhysX.Math.Vector3[nextHull.Vertices.Length];
+                newHull.Vertices = new System.Numerics.Vector3[nextHull.Vertices.Length];
                 for (int j = 0; j < nextHull.Vertices.Length; j++)
                 {
-                    PhysX.Math.Vector3 vec = nextHull.Vertices[j];
-                    newHull.Vertices[j] = new PhysX.Math.Vector3(vec.X, vec.Y, vec.Z);
+                    System.Numerics.Vector3 vec = nextHull.Vertices[j];
+                    newHull.Vertices[j] = new System.Numerics.Vector3(vec.X, vec.Y, vec.Z);
                 }
 
                 retHulls[i] = newHull;

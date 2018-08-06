@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, InWorldz Halcyon Developers
  * All rights reserved.
  * 
@@ -36,6 +36,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using InWorldz.Physxstatic;
 
 namespace InWorldz.PhysxPhysics
 {
@@ -129,10 +130,11 @@ namespace InWorldz.PhysxPhysics
             //the height of ALL the terrain below our bounding box must be checked
             //to find the highest peak. quantize to the nearest meter since we don't
             //actually need to have the slope calculations performed
-            int yCoordMin = (int)Math.Floor(_actor.WorldBounds.Center.Y - _actor.WorldBounds.Extents.Y);
-            int yCoordMax = (int)Math.Ceiling(_actor.WorldBounds.Center.Y + _actor.WorldBounds.Extents.Y);
-            int xCoordMin = (int)Math.Floor(_actor.WorldBounds.Center.X - _actor.WorldBounds.Extents.X);
-            int xCoordMax = (int)Math.Ceiling(_actor.WorldBounds.Center.X + _actor.WorldBounds.Extents.X);
+            var worldBounds = _actor.GetWorldBounds();
+            int yCoordMin = (int)Math.Floor(worldBounds.Center.Y - worldBounds.Extents.Y);
+            int yCoordMax = (int)Math.Ceiling(worldBounds.Center.Y + worldBounds.Extents.Y);
+            int xCoordMin = (int)Math.Floor(worldBounds.Center.X - worldBounds.Extents.X);
+            int xCoordMax = (int)Math.Ceiling(worldBounds.Center.X + worldBounds.Extents.X);
             float maxHeightFound = -100.0f;
 
             for (int x = xCoordMin; x <= xCoordMax; x++)
@@ -143,9 +145,9 @@ namespace InWorldz.PhysxPhysics
                 }
             }
 
-            if (_position.Z - _actor.WorldBounds.Extents.Z <= maxHeightFound)
+            if (_position.Z - _actor.GetWorldBounds().Extents.Z <= maxHeightFound)
             {
-                _position.Z = maxHeightFound + _actor.WorldBounds.Extents.Z + 0.1f;
+                _position.Z = maxHeightFound + _actor.GetWorldBounds().Extents.Z + 0.1f;
                 _dynActor.GlobalPose = PhysUtil.PositionToMatrix(_position, _rotation);
             }
         }
@@ -262,7 +264,12 @@ namespace InWorldz.PhysxPhysics
                 foreach (var shape in _shapeToPrimIndex.Keys)
                 {
                     OpenMetaverse.Vector3 translatedPose = PhysUtil.DecomposeToPosition(shape.GlobalPose) + offset;
-                    PhysX.Shape[] overlapping = _scene.SceneImpl.OverlapMultiple(shape.Geom, PhysUtil.PositionToMatrix(translatedPose, _rotation));
+                    PhysX.Shape[] overlapping = _scene.SceneImpl.Overlap(
+                        shape.GetGeometry(),
+                        PhysUtil.PositionToMatrix(translatedPose, _rotation),
+                        1, // Maximum overlaps
+                        null/*TODO NEEDS CALLBACK*/
+                    );
 
                     if (overlapping == null)
                     {
@@ -328,7 +335,7 @@ namespace InWorldz.PhysxPhysics
 
         private void EnforceMinimumDynamicDimensions()
         {
-            PhysX.Bounds3 bounds = _actor.WorldBounds;
+            PhysX.Bounds3 bounds = _actor.GetWorldBounds();
 
             float xsz = bounds.Extents.X * 2.0f;
             float ysz = bounds.Extents.Y * 2.0f;
@@ -355,13 +362,13 @@ namespace InWorldz.PhysxPhysics
             {
                 //object is too small to be dynamic. set kinematic
                 _isPhysical = false;
-                _dynActor.Flags = _dynActor.Flags | PhysX.RigidDynamicFlags.Kinematic;
+                _dynActor.RigidBodyFlags |= PhysX.RigidBodyFlag.Kinematic;
             }
         }
 
         private void EnforceMaximumDynamicDimensions()
         {
-            PhysX.Bounds3 bounds = _actor.WorldBounds;
+            PhysX.Bounds3 bounds = _actor.GetWorldBounds();
 
             float xsz = bounds.Extents.X * 2.0f;
             float ysz = bounds.Extents.Y * 2.0f;
@@ -374,7 +381,7 @@ namespace InWorldz.PhysxPhysics
             {
                 //object is too large to be dynamic. set kinematic
                 _isPhysical = false;
-                _dynActor.Flags = _dynActor.Flags | PhysX.RigidDynamicFlags.Kinematic;
+                _dynActor.RigidBodyFlags |= PhysX.RigidBodyFlag.Kinematic;
                 return;
             }
 
@@ -398,7 +405,7 @@ namespace InWorldz.PhysxPhysics
             {
                 //object is too large to be dynamic. set kinematic
                 _isPhysical = false;
-                _dynActor.Flags = _dynActor.Flags | PhysX.RigidDynamicFlags.Kinematic;
+                _dynActor.RigidBodyFlags |= PhysX.RigidBodyFlag.Kinematic;
                 return;
             }
         }
