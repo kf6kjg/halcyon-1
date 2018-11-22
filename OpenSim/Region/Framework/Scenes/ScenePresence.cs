@@ -144,7 +144,7 @@ namespace OpenSim.Region.Framework.Scenes
         // with varying parameters for sit target location, prim size, prim
         // rotation, prim cut, prim twist, prim taper, and prim shear. See mantis
         // issue #1716
-        private bool ADJUST_SIT_TARGET = true;  // do it the old OpenSim way for content compatibility
+        private readonly bool ADJUST_SIT_TARGET = true;  // do it the old OpenSim way for content compatibility
         private static readonly Vector3 m_sitTargetCorrectionOffset = new Vector3(0.1f, 0.0f, 0.3f);
         private float m_godlevel;
 
@@ -3713,7 +3713,7 @@ namespace OpenSim.Region.Framework.Scenes
             cadu.AgentID = UUID.Guid;
             cadu.alwaysrun = m_setAlwaysRun;
             cadu.AVHeight = m_avHeight;
-            sLLVector3 tempCameraCenter = new sLLVector3(new Vector3(m_CameraCenter.X, m_CameraCenter.Y, m_CameraCenter.Z));
+            sLLVector3 tempCameraCenter = new sLLVector3(m_CameraCenter);
             cadu.cameraPosition = tempCameraCenter;
             cadu.drawdistance = m_DrawDistance;
             if (!this.IsBot)    // bots don't need IsGod checks
