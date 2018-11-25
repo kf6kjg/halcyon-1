@@ -43,6 +43,7 @@ using System.Linq;
 
 namespace OpenSim.Region.Framework.Scenes
 {
+    [Flags]
     enum ScriptControlled : uint
     {
         CONTROL_ZERO = 0,
@@ -1028,6 +1029,7 @@ namespace OpenSim.Region.Framework.Scenes
         /// <summary>
         /// Implemented Control Flags
         /// </summary>
+        [Flags]
         internal enum Dir_ControlFlags
         {
             DIR_CONTROL_FLAG_FORWARD = AgentManager.ControlFlags.AGENT_CONTROL_AT_POS,
