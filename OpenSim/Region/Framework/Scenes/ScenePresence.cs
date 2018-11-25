@@ -249,7 +249,7 @@ namespace OpenSim.Region.Framework.Scenes
             get { return m_agentPrefs; }
             set
             {
-                bool updatedHover = (m_agentPrefs == null) ? true : (m_agentPrefs.HoverHeight != (float)value.HoverHeight);
+                bool updatedHover = (m_agentPrefs == null) || (Math.Abs(m_agentPrefs.HoverHeight - (float)value.HoverHeight) > 0.01f);
                 m_agentPrefs = value;
                 if (updatedHover)
                 {
@@ -622,7 +622,7 @@ namespace OpenSim.Region.Framework.Scenes
                     posForced = true;
                 }
 
-                bool mayHaveChangedParcels = (ppos.X != _prevPosition.X) || (ppos.Y != _prevPosition.Y) || (ppos.Z < _prevPosition.Z);
+                bool mayHaveChangedParcels = (Math.Abs(ppos.X - _prevPosition.X) > 0.0001f) || (Math.Abs(ppos.Y - _prevPosition.Y) > 0.0001f) || (ppos.Z < _prevPosition.Z);
                 if (checkParcelChange && mayHaveChangedParcels)    // needs re-check
                 {
                     ILandObject parcel = Scene.LandChannel.GetLandObject(ppos.X, ppos.Y);
@@ -1809,7 +1809,7 @@ namespace OpenSim.Region.Framework.Scenes
 
 
             // check if the Agent's Draw distance setting has changed
-            if (m_DrawDistance != agentData.Far)
+            if (Math.Abs(m_DrawDistance - agentData.Far) > 0.1f)
             {
                 m_DrawDistance = agentData.Far;
                 UpdateForDrawDistanceChange();
@@ -4454,7 +4454,7 @@ namespace OpenSim.Region.Framework.Scenes
                     killerObj = part.LocalId;
                 }
 
-                if (starthealth != m_health)
+                if (Math.Abs(starthealth - m_health) > 0.1f)
                 {
                     //we can not fire TriggerAvatarKill from this thread because we're 
                     //inside the physics thread and some of the actions that need to 
