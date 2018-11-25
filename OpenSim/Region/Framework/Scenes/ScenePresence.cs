@@ -111,8 +111,6 @@ namespace OpenSim.Region.Framework.Scenes
 
         public static byte[] DefaultTexture;
 
-//        internal static RegionSettings s_RegionSettings;
-
         public UUID currentParcelUUID = UUID.Zero;
         private AnimationSet m_animations = new AnimationSet();
         private Dictionary<UUID, ScriptControllers> m_scriptedcontrols = new Dictionary<UUID, ScriptControllers>();
@@ -120,7 +118,6 @@ namespace OpenSim.Region.Framework.Scenes
         private ScriptControlled LastCommands = ScriptControlled.CONTROL_ZERO;
         private bool MouseDown = false;
         private SceneObjectGroup proxyObjectGroup;
-        //private SceneObjectPart proxyObjectPart = null;
         public Vector3 lastKnownAllowedPosition;
         public bool sentMessageAboutRestrictedParcelFlyingDown;
 
@@ -133,8 +130,6 @@ namespace OpenSim.Region.Framework.Scenes
         private Vector3 m_requestedSitTargetOffset;
 
         private bool m_startAnimationSet;
-
-        //private Vector3 m_requestedSitOffset = new Vector3();
 
         private Vector3 m_LastFinitePos;
 
@@ -151,7 +146,6 @@ namespace OpenSim.Region.Framework.Scenes
         private bool m_invulnerable = true;
 
         private Vector3 m_LastChildAgentUpdatePosition;
-//        private Vector3 m_lastChildAgentUpdateCamPosition;
         private Vector3 m_LastRegionPosition = new Vector3(128, 128, 128);
 
         private int m_perfMonMS;
@@ -231,7 +225,6 @@ namespace OpenSim.Region.Framework.Scenes
         //PauPaw:Proper PID Controler for autopilot************
         private bool m_moveToPositionInProgress;
         private Vector3 m_moveToPositionTarget = Vector3.Zero;
-        //private int m_moveToPositionStateStatus = 0;
         //*****************************************************
 
         // Agent's Draw distance.
@@ -1320,11 +1313,9 @@ namespace OpenSim.Region.Framework.Scenes
                         Vector3 newPos = sitInfo.Offset;
                         newPos += m_sitTargetCorrectionOffset;
                         m_bodyRot = sitInfo.Rotation;
-                        //Rotation = sitTargetOrient;
                         SetAgentPositionInfo(null, true, newPos, part, part.AbsolutePosition, Vector3.Zero);
                     }
                 }
-                //m_animPersistUntil = 0;    // abort any timed animation
 
                 // Avatar has arrived on prim
                 int avatarsRemainingOnPrim = part.ParentGroup.RidingAvatarArrivedFromOtherSim();
@@ -1335,9 +1326,6 @@ namespace OpenSim.Region.Framework.Scenes
                 }
 
                 m_scene.EventManager.TriggerOnCrossedAvatarReady(part, this.UUID);
-
-                //mitigation for client not getting the required immediate update for crossing objects
-                //part.ParentGroup.SendFullUpdateToClientImmediate(this.ControllingClient);
 
                 // Trigger any remaining events that rely on the avatar being present.
                 if (!part.ParentGroup.IsAttachment)
@@ -1382,10 +1370,6 @@ namespace OpenSim.Region.Framework.Scenes
 //            m_log.DebugFormat(
 //                 "[SCENE PRESENCE]: Downgrading root agent {0}, {1} to a child agent in {2}",
 //                 Name, UUID, m_scene.RegionInfo.RegionName);
-
-            // Don't zero out the velocity since this can cause problems when an avatar is making a region crossing,
-            // depending on the exact timing.  This shouldn't matter anyway since child agent positions are not updated.
-            //Velocity = Vector3.Zero;
 
             RemoveFromPhysicalScene();
             m_requestedSitTargetID = 0;
@@ -1732,7 +1716,6 @@ namespace OpenSim.Region.Framework.Scenes
         /// </summary>
         public void HandleAgentUpdate(IClientAPI remoteClient, AgentUpdateArgs agentData)
         {
-            bool recoverPhysActor = false;
             if (m_isChildAgent)
             {
                 //m_log.Warn("[CROSSING]: HandleAgentUpdate from child agent ignored "+agentData.AgentID.ToString());
@@ -2159,24 +2142,13 @@ namespace OpenSim.Region.Framework.Scenes
             m_autoPilotTarget = Pos;
             m_sitAtAutoTarget = false;
             PrimitiveBaseShape proxy = PrimitiveBaseShape.Default;
-            //proxy.PCode = (byte)PCode.ParticleSystem;
 
             proxyObjectGroup = new SceneObjectGroup(UUID, Pos, Rotation, proxy, false);
             proxyObjectGroup.AttachToScene(m_scene, false);
             
-            // Commented out this code since it could never have executed, but might still be informative.
-//            if (proxyObjectGroup != null)
-//            {
-                proxyObjectGroup.SendGroupFullUpdate(PrimUpdateFlags.ForcedFullUpdate);
-                remote_client.SendSitResponse(proxyObjectGroup.UUID, Vector3.Zero, Quaternion.Identity, true, Vector3.Zero, Vector3.Zero, false);
-                m_scene.DeleteSceneObject(proxyObjectGroup, false);
-//            }
-//            else
-//            {
-//                m_autopilotMoving = false;
-//                m_autoPilotTarget = Vector3.Zero;
-//                ControllingClient.SendAlertMessage("Autopilot cancelled");
-//            }
+            proxyObjectGroup.SendGroupFullUpdate(PrimUpdateFlags.ForcedFullUpdate);
+            remote_client.SendSitResponse(proxyObjectGroup.UUID, Vector3.Zero, Quaternion.Identity, true, Vector3.Zero, Vector3.Zero, false);
+            m_scene.DeleteSceneObject(proxyObjectGroup, false);
         }
 
         public void DoMoveToPosition(Object sender, string method, List<String> args)
@@ -2247,24 +2219,7 @@ namespace OpenSim.Region.Framework.Scenes
                         SceneView.SendFullUpdateToAllClients();
                     }
                 }
-                    /*
-                else
-                {
-                    //ControllingClient.SendAlertMessage("Autopilot cancelled");
-                    //SendTerseUpdateToAllClients();
-                    //PrimitiveBaseShape proxy = PrimitiveBaseShape.Default;
-                    //proxy.PCode = (byte)PCode.ParticleSystem;
-                    ////uint nextUUID = m_scene.NextLocalId;
 
-                    //proxyObjectGroup = new SceneObjectGroup(m_scene, m_scene.RegionInfo.RegionHandle, UUID, nextUUID, m_autoPilotTarget, Quaternion.Identity, proxy);
-                    //if (proxyObjectGroup != null)
-                    //{
-                        //proxyObjectGroup.SendGroupFullUpdate();
-                        //ControllingClient.SendSitResponse(UUID.Zero, m_autoPilotTarget, Quaternion.Identity, true, Vector3.Zero, Vector3.Zero, false);
-                        //m_scene.DeleteSceneObject(proxyObjectGroup);
-                    //}
-                }
-                */
                 m_autoPilotTarget = Vector3.Zero;
                 m_autopilotMoving = false;
             }
@@ -2310,7 +2265,6 @@ namespace OpenSim.Region.Framework.Scenes
         {
             SceneObjectPart part = null;
             float partTop = 0.0f;
-            //bool clearTransit = false;
             bool clearCam = false;
 
             //standing from ground?
@@ -2378,11 +2332,6 @@ namespace OpenSim.Region.Framework.Scenes
                             return;
                         }
 
-                        /*
-                        clearTransit = true;
-                        part.ParentGroup.StartTransit();
-                        */
-
                         // if not phantom, adjust for the height of the prim to stand up on top of it
                         PhysicsActor physActor = part.PhysActor;
                         if (physActor != null)
@@ -2402,11 +2351,6 @@ namespace OpenSim.Region.Framework.Scenes
                         Velocity = Vector3.Zero;
                         info.Parent = null;
                         m_posInfo.Set(info);
-
-                        // This is all we do when standing up from a prim so it can be removed from a scene for a crossing.
-                        /*if (clearTransit)
-                            part.ParentGroup.EndTransit();
-                         */
                     }
                     else
                     {
@@ -2470,9 +2414,6 @@ namespace OpenSim.Region.Framework.Scenes
                             // be careful, do not call this when fromCrossing is true
                             AddToPhysicalScene(false);
                         }
-
-                        /*if (clearTransit && (part != null))
-                            part.ParentGroup.EndTransit();*/
 
                         SceneView.SendFullUpdateToAllClients();
                         if (clearCam)
@@ -2604,22 +2545,7 @@ namespace OpenSim.Region.Framework.Scenes
                     avSitRot *= sitInfo.Rotation;
                     vRot *= sitInfo.Rotation;
                 }
-                else
-                {
-                    // Make up a desired facing, relative to the child prim seated on.
-                    // We'll use the prim rotation for now.
-//                    avSitPos += Vector3.Zero;         // could put the avatar on top of the prim
-//                    avSitRot *= Quaternion.Identity;  // could face the avatar to the side clicked on
-//                    vRot *= Quaternion.Identity;  // could face the avatar to the side clicked on
-                }
 
-#if false
-                // I believe this is correct for root-relative storage but not for now, 
-                // while we want to maintain it relative to the parentID pointing at child prim.
-                avSitPos += part.OffsetPosition;
-                if (part == rootPart)
-                    avSitPos *= rootPart.RotationOffset;
-#endif
                 // The only thing left to make avSitPos completely absolute would be to add rootPart.AbsolutePosition
                 // but SetAgentPositionInfo takes that as a parameter.
 
@@ -2670,7 +2596,6 @@ namespace OpenSim.Region.Framework.Scenes
 
             StandUp(false, true);
 
-            //SceneObjectPart part = m_scene.GetSceneObjectPart(targetID);
             SceneObjectPart part = FindNextAvailableSitTarget(targetID);
             if (part == null)
             {
@@ -2693,7 +2618,6 @@ namespace OpenSim.Region.Framework.Scenes
             }
             m_requestedSitTargetID = part.LocalId;
             m_requestedSitTargetUUID = part.UUID;
-            //m_requestedSitOffset = offset;
 
             SendSitResponse(remoteClient, targetID, offset);
         }
@@ -2701,7 +2625,6 @@ namespace OpenSim.Region.Framework.Scenes
         public void HandleAgentRequestSit(IClientAPI remoteClient, UUID agentID, UUID targetID, Vector3 offset, string sitAnimation)
         {
 //            m_log.InfoFormat("[SCENE PRESENCE]: HandleAgentRequestSit agent {0} at {1} requesing sit at {2} ", agentID.ToString(), m_pos.ToString(), offset.ToString());
-//            m_movementflag = 0;
 
             StandUp(false, true);
 
@@ -2714,13 +2637,11 @@ namespace OpenSim.Region.Framework.Scenes
                 m_nextSitAnimation = "SIT";
             }
 
-            //SceneObjectPart part = m_scene.GetSceneObjectPart(targetID);
             SceneObjectPart part =  FindNextAvailableSitTarget(targetID);
             if (part != null)
             {
                 m_requestedSitTargetID = part.LocalId;
                 m_requestedSitTargetUUID = part.UUID;
-                //m_requestedSitOffset = offset;
             }
             else
             {
@@ -2831,8 +2752,6 @@ namespace OpenSim.Region.Framework.Scenes
             Animasset.Name = "Random Animation";
             Animasset.Type = (sbyte)AssetType.Animation;
             Animasset.Description = "dance";
-            //BinBVHAnimation bbvhanim = new BinBVHAnimation(Animasset.Data);
-
 
             m_scene.CommsManager.AssetCache.AddAsset(Animasset, AssetRequestInfo.InternalRequest());
             AddAnimation(Animasset.FullID, UUID);
@@ -5095,8 +5014,6 @@ namespace OpenSim.Region.Framework.Scenes
         /// <summary>
         /// This function sends a new release/take combo packet for each script that has controls in a sat-upon prim.
         /// </summary>
-        /// <param name="remoteClient"></param>
-        /// <param name="agentID"></param>
         public void ResendVehicleControls()
         {
             if (IsChildAgent)
