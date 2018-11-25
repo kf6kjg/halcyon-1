@@ -1710,7 +1710,9 @@ namespace OpenSim.Region.Framework.Scenes
 
         public void UpdateForDrawDistanceChange()
         {
-            m_remotePresences.HandleDrawDistanceChanged((uint)m_DrawDistance);
+            // TODO: shouldn't the async buck be passed on to the caller?
+            var task = m_remotePresences.HandleDrawDistanceChanged((uint)m_DrawDistance);
+            task.Wait();
         }
 
         /// <summary>
