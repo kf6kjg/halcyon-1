@@ -4179,7 +4179,7 @@ namespace OpenSim.Region.Framework.Scenes
                 return true;
             }
 
-            // Disabling the draw distance based visibility until the algorithm handles proper tiling path rules for region visibility.
+            // TODO: Disabling the draw distance based visibility until the algorithm handles proper tiling path rules for region visibility.
             // e.g. Diagonal regions (i.e. checkerboard region layouts) are not supposed to be visible without a horizontal/vertical connection region.
 #if false
             // region offset, e.g. (1002, 999) viewing (1000,1000) would be diffX=-2, diffY=1 (left 2, up 1)
