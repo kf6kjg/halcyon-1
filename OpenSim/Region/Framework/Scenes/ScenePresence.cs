@@ -1731,19 +1731,21 @@ namespace OpenSim.Region.Framework.Scenes
             if (update)
             {
                 //m_log.WarnFormat("[SCENE PRESENCE]: AgentUpdate: {0} {1} {2} {3} {4}", this.Name, x.Flags.ToString("X2"), x.ControlFlags.ToString("X8"), x.State.ToString(), this.Velocity.ToString());
-                AgentUpdateArgs arg = new AgentUpdateArgs();
-                arg.AgentID = x.AgentID;
-                arg.BodyRotation = x.BodyRotation;
-                arg.CameraAtAxis = x.CameraAtAxis;
-                arg.CameraCenter = x.CameraCenter;
-                arg.CameraLeftAxis = x.CameraLeftAxis;
-                arg.CameraUpAxis = x.CameraUpAxis;
-                arg.ControlFlags = x.ControlFlags;
-                arg.Far = x.Far;
-                arg.Flags = x.Flags;
-                arg.HeadRotation = x.HeadRotation;
-                arg.SessionID = x.SessionID;
-                arg.State = x.State;
+                AgentUpdateArgs arg = new AgentUpdateArgs
+                {
+                    AgentID = x.AgentID,
+                    BodyRotation = x.BodyRotation,
+                    CameraAtAxis = x.CameraAtAxis,
+                    CameraCenter = x.CameraCenter,
+                    CameraLeftAxis = x.CameraLeftAxis,
+                    CameraUpAxis = x.CameraUpAxis,
+                    ControlFlags = x.ControlFlags,
+                    Far = x.Far,
+                    Flags = x.Flags,
+                    HeadRotation = x.HeadRotation,
+                    SessionID = x.SessionID,
+                    State = x.State,
+                };
 
                 m_lastAgentUpdate = arg; // save this set of arguments for nexttime
                 HandleAgentUpdate(remoteClient, arg);
@@ -2828,14 +2830,16 @@ namespace OpenSim.Region.Framework.Scenes
         {
             int rnditerations = 3;
             BinBVHAnimation anim = new BinBVHAnimation();
-            List<string> parts = new List<string>();
-            parts.Add("mPelvis");parts.Add("mHead");parts.Add("mTorso");
-            parts.Add("mHipLeft");parts.Add("mHipRight");parts.Add("mHipLeft");parts.Add("mKneeLeft");
-            parts.Add("mKneeRight");parts.Add("mCollarLeft");parts.Add("mCollarRight");parts.Add("mNeck");
-            parts.Add("mElbowLeft");parts.Add("mElbowRight");parts.Add("mWristLeft");parts.Add("mWristRight");
-            parts.Add("mShoulderLeft");parts.Add("mShoulderRight");parts.Add("mAnkleLeft");parts.Add("mAnkleRight");
-            parts.Add("mEyeRight");parts.Add("mChest");parts.Add("mToeLeft");parts.Add("mToeRight");
-            parts.Add("mFootLeft");parts.Add("mFootRight");parts.Add("mEyeLeft");
+            List<string> parts = new List<string>
+            {
+                "mPelvis", "mHead", "mTorso",
+                "mHipLeft", "mHipRight", "mHipLeft", "mKneeLeft",
+                "mKneeRight", "mCollarLeft", "mCollarRight", "mNeck",
+                "mElbowLeft", "mElbowRight", "mWristLeft", "mWristRight",
+                "mShoulderLeft", "mShoulderRight", "mAnkleLeft", "mAnkleRight",
+                "mEyeRight", "mChest", "mToeLeft", "mToeRight",
+                "mFootLeft", "mFootRight", "mEyeLeft",
+            };
             anim.HandPose = 1;
             anim.InPoint = 0;
             anim.OutPoint = (rnditerations * .10f);
@@ -2850,11 +2854,13 @@ namespace OpenSim.Region.Framework.Scenes
             anim.Joints = new binBVHJoint[strjoints.Length];
             for (int j = 0; j < strjoints.Length; j++)
             {
-                anim.Joints[j] = new binBVHJoint();
-                anim.Joints[j].Name = strjoints[j];
-                anim.Joints[j].Priority = 7;
-                anim.Joints[j].positionkeys = new binBVHJointKey[rnditerations];
-                anim.Joints[j].rotationkeys = new binBVHJointKey[rnditerations];
+                anim.Joints[j] = new binBVHJoint
+                {
+                    Name = strjoints[j],
+                    Priority = 7,
+                    positionkeys = new binBVHJointKey[rnditerations],
+                    rotationkeys = new binBVHJointKey[rnditerations],
+                };
                 Random rnd = new Random();
                 for (int i = 0; i < rnditerations; i++)
                 {
@@ -2872,15 +2878,17 @@ namespace OpenSim.Region.Framework.Scenes
             }
 
 
-            AssetBase Animasset = new AssetBase();
-            Animasset.Data = anim.ToBytes();
-            Animasset.Temporary = true;
-            Animasset.Local = true;
-            Animasset.FullID = UUID.Random();
+            AssetBase Animasset = new AssetBase
+            {
+                Data = anim.ToBytes(),
+                Temporary = true,
+                Local = true,
+                FullID = UUID.Random(),
+                Name = "Random Animation",
+                Type = (sbyte)AssetType.Animation,
+                Description = "dance",
+            };
             Animasset.ID = Animasset.FullID.ToString();
-            Animasset.Name = "Random Animation";
-            Animasset.Type = (sbyte)AssetType.Animation;
-            Animasset.Description = "dance";
 
             m_scene.CommsManager.AssetCache.AddAsset(Animasset, AssetRequestInfo.InternalRequest());
             AddAnimation(Animasset.FullID, UUID);
@@ -4373,11 +4381,11 @@ namespace OpenSim.Region.Framework.Scenes
             }
             catch { }
 
-            List<RemotePresenceInfo> presInfo 
-                = new List<RemotePresenceInfo>(m_remotePresences.GetRemotePresenceList().Select((AvatarRemotePresence pres) => { return pres.PresenceInfo; }));
-
-            //add THIS presence since on another sim it will be remote
-            presInfo.Add(new RemotePresenceInfo { CapsPath = m_connection.CircuitData.CapsPath, RegionInfo = m_scene.RegionInfo });
+            List<RemotePresenceInfo> presInfo = new List<RemotePresenceInfo>(m_remotePresences.GetRemotePresenceList().Select((AvatarRemotePresence pres) => { return pres.PresenceInfo; }))
+            {
+                //add THIS presence since on another sim it will be remote
+                new RemotePresenceInfo { CapsPath = m_connection.CircuitData.CapsPath, RegionInfo = m_scene.RegionInfo },
+            };
 
             cAgent.RemoteAgents = presInfo;
 
@@ -5123,12 +5131,14 @@ namespace OpenSim.Region.Framework.Scenes
 
         public void RegisterControlEventsToScript(int oldControls, int oldPassOn, int controls, int accept, int pass_on, uint Obj_localID, UUID Script_item_UUID, bool silent)
         {
-            ScriptControllers obj = new ScriptControllers();
-            obj.ignoreControls = ScriptControlled.CONTROL_ZERO;
-            obj.eventControls = ScriptControlled.CONTROL_ZERO;
+            ScriptControllers obj = new ScriptControllers
+            {
+                ignoreControls = ScriptControlled.CONTROL_ZERO,
+                eventControls = ScriptControlled.CONTROL_ZERO,
 
-            obj.itemID = Script_item_UUID;
-            obj.objID = Obj_localID;
+                itemID = Script_item_UUID,
+                objID = Obj_localID,
+            };
 
             SceneObjectPart part = m_scene.GetSceneObjectPart(Obj_localID);
             if (part == null)
