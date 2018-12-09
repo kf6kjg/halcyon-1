@@ -28,39 +28,38 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
-// General Information about an assembly is controlled through the following 
-// set of attributes. Change these attribute values to modify the information
-// associated with an assembly.
-[assembly: AssemblyTitle("InWorldz.Phlox.Engine")]
-[assembly: AssemblyDescription("")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Microsoft")]
-[assembly: AssemblyProduct("InWorldz.Phlox.Engine")]
-[assembly: AssemblyCopyright("Copyright © Microsoft 2011")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyCulture("")]
+namespace Halcyon.Phlox.Engine
+{
+    internal class PhloxConstants
+    {
+        /// <summary>
+        /// Where compiles scripts are stored locally
+        /// </summary>
+        public const string COMPILE_CACHE_DIR = "./ScriptEngines/Phlox/cache";
 
-// Setting ComVisible to false makes the types in this assembly not visible 
-// to COM components.  If you need to access a type in this assembly from 
-// COM, set the ComVisible attribute to true on that type.
-[assembly: ComVisible(false)]
+        /// <summary>
+        /// Where the states for each script in each item are stored. This is stored under the itemid /states/{itemid}.state
+        /// </summary>
+        public const string STATE_SAVE_DIR = "./ScriptEngines/Phlox/states";
 
-// The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("cef8d3f1-a828-4285-bcb1-91581e52588e")]
+        /// <summary>
+        /// How many characters of an item or asset id are used to create subfolders for cached scripts
+        /// </summary>
+        public const int CACHE_PREFIX_LEN = 3;
 
-// Version information for an assembly consists of the following four values:
-//
-//      Major Version
-//      Minor Version 
-//      Build Number
-//      Revision
-//
-// You can specify all the values or you can default the Build and Revision Numbers 
-// by using the '*' as shown below:
-// [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+        /// <summary>
+        /// The file extension for a compiled script
+        /// </summary>
+        public const string COMPILED_SCRIPT_EXTENSION = ".plx";
+
+        /// <summary>
+        /// The file extension for saved state data
+        /// </summary>
+        public const string STATE_DATA_EXTENSION = ".state";
+    }
+}

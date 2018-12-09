@@ -1,0 +1,13 @@
+﻿<Addin id="Halcyon.Phlox.Engine" version="0.1">
+  <Runtime>
+    <Import assembly="Halcyon.Phlox.Engine.dll"/>
+  </Runtime>
+
+  <Dependencies>
+    <Addin id="OpenSim" version="0.5" />
+  </Dependencies>
+
+  <Extension path = "/OpenSim/RegionModules">
+    <RegionModule id="HalcyonPhloxEngine" type="Halcyon.Phlox.Engine.EngineInterface" />
+  </Extension>
+</Addin>

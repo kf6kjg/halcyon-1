@@ -33,21 +33,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace InWorldz.Phlox.Engine
+namespace Halcyon.Phlox.Engine
 {
-    /// <summary>
-    /// Exception thrown what a script fails to load
-    /// </summary>
-    public class LoaderException : Exception
+    public class PendingCommand
     {
-        public LoaderException(string message)
-            : base(message)
+        public enum PCType
         {
+            StopAllTraces
         }
 
-        public LoaderException(string message, Exception innerException)
-            : base(message, innerException)
-        {
-        }
+        public PCType CommandType;
     }
 }

@@ -34,54 +34,80 @@ using System.Linq;
 using System.Text;
 
 using OpenMetaverse;
-using InWorldz.Phlox.Types;
-using log4net;
-using System.Reflection;
-using OpenSim.Region.Framework.Scenes;
-using OpenSim.Framework;
-using OpenSim.Region.ScriptEngine.Shared.ScriptBase;
 
-namespace InWorldz.Phlox.Engine
+namespace Halcyon.Phlox.Engine
 {
-    internal class LogOutputListener : ILSLListener
+    /// <summary>
+    /// A submitted request for script information
+    /// </summary>
+    internal class ScriptInfoRequest
     {
-        private static readonly ILog _log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-
-        #region ILSLListener Members
-        bool _hasErrors = false;
-
-        List<SceneObjectPart> parts;
-
-        public LogOutputListener(IEnumerable<LoadUnloadRequest> requests)
+        public delegate void InfoRetrieved(ScriptInfoRequest req);
+        private InfoRetrieved _retrievedCallback;
+        
+        public enum Type
         {
-            parts = new List<SceneObjectPart>(requests.Select(r => r.Prim));
+            ScriptRunningRequest,
+            ScriptEnabledDetailsRequest
         }
 
-        public void Error(string message)
+        private UUID _itemId;
+        public UUID ItemId
         {
-            _hasErrors = true;
-            _log.Error("[Phlox]: " + message);
-
-            foreach (SceneObjectPart part in parts)
+            get
             {
-                LSLSystemAPI.ChatFromObject(ScriptBaseClass.DEBUG_CHANNEL, message, ChatTypeEnum.Shout, part.ParentGroup.Scene, part, UUID.Zero);
+                return _itemId;
             }
         }
 
-        public bool HasErrors()
+        private Type _reqType;
+        public Type ReqType
         {
-            return _hasErrors;
+            get
+            {
+                return _reqType;
+            }
         }
 
-        public void Info(string message)
+        private bool _isRunning;
+        public bool IsRunning
         {
-            _log.Info("[Phlox]: " + message);
+            get
+            {
+                return _isRunning;
+            }
+
+            set
+            {
+                _isRunning = value;
+            }
         }
 
-        public void CompilationFinished()
+        public List<Tuple<UUID, bool, VM.RuntimeState.LocalDisableFlag>> DetailedEnabledInfo { get; set; }
+
+        private IEnumerable<UUID> _scriptItemsToCheck;
+        public IEnumerable<UUID> ScriptItemList
         {
+            get { return _scriptItemsToCheck; }
         }
 
-        #endregion
+        public ScriptInfoRequest(UUID itemId, Type reqType, InfoRetrieved retrievedCallback)
+        {
+            _itemId = itemId;
+            _reqType = reqType;
+            _retrievedCallback = retrievedCallback;
+        }
+
+        public ScriptInfoRequest(Type reqType, IEnumerable<UUID> scriptItemIds, InfoRetrieved retrievedCallback)
+        {
+            _reqType = reqType;
+            _retrievedCallback = retrievedCallback;
+            _scriptItemsToCheck = scriptItemIds;
+        }
+
+        public void FireRetrievedCallBack()
+        {
+            _retrievedCallback(this);
+        }
     }
 }

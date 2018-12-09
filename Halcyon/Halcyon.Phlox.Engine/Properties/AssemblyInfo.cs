@@ -28,53 +28,39 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
-using InWorldz.Phlox.Types;
+// General Information about an assembly is controlled through the following 
+// set of attributes. Change these attribute values to modify the information
+// associated with an assembly.
+[assembly: AssemblyTitle("Halcyon.Phlox.Engine")]
+[assembly: AssemblyDescription("")]
+[assembly: AssemblyConfiguration("")]
+[assembly: AssemblyCompany("Microsoft")]
+[assembly: AssemblyProduct("Halcyon.Phlox.Engine")]
+[assembly: AssemblyCopyright("Copyright © Microsoft 2011")]
+[assembly: AssemblyTrademark("")]
+[assembly: AssemblyCulture("")]
 
-namespace InWorldz.Phlox.Engine
-{
-    /// <summary>
-    /// Notifies more than one listener of compiler status
-    /// </summary>
-    internal class MulticastCompilerListener : ILSLListener
-    {
-        private List<ILSLListener> _delegates;
-        private bool _hasErrors = false;
+// Setting ComVisible to false makes the types in this assembly not visible 
+// to COM components.  If you need to access a type in this assembly from 
+// COM, set the ComVisible attribute to true on that type.
+[assembly: ComVisible(false)]
 
+// The following GUID is for the ID of the typelib if this project is exposed to COM
+[assembly: Guid("cef8d3f1-a828-4285-bcb1-91581e52588e")]
 
-
-        public MulticastCompilerListener(IEnumerable<ILSLListener> listeners)
-        {
-            _delegates = new List<ILSLListener>(listeners);
-        }
-
-        #region ILSLListener Members
-
-        public void CompilationFinished()
-        {
-            _delegates.ForEach(delegate(ILSLListener listener) { listener.CompilationFinished(); });
-        }
-
-        public void Error(string message)
-        {
-            _hasErrors = true;
-            _delegates.ForEach(delegate(ILSLListener listener) { listener.Error(message); });
-        }
-
-        public bool HasErrors()
-        {
-            return _hasErrors;
-        }
-
-        public void Info(string message)
-        {
-            _delegates.ForEach(delegate(ILSLListener listener) { listener.Info(message); });
-        }
-
-        #endregion
-    }
-}
+// Version information for an assembly consists of the following four values:
+//
+//      Major Version
+//      Minor Version 
+//      Build Number
+//      Revision
+//
+// You can specify all the values or you can default the Build and Revision Numbers 
+// by using the '*' as shown below:
+// [assembly: AssemblyVersion("1.0.*")]
+[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("1.0.0.0")]

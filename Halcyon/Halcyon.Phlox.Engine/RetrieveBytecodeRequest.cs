@@ -32,34 +32,49 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using OpenMetaverse;
+using System.Threading;
 
-namespace InWorldz.Phlox.Engine
+namespace Halcyon.Phlox.Engine
 {
-    internal class PhloxConstants
+    /// <summary>
+    /// A request to the script loader to serialize a copy of the compiled
+    /// script that it may have loaded for the given asset ids
+    /// </summary>
+    internal class RetrieveBytecodeRequest
     {
         /// <summary>
-        /// Where compiles scripts are stored locally
+        /// An enumerable specifying the script IDs for which we would like to get a serialized
+        /// copy of the compiled script with bytecode data
         /// </summary>
-        public const string COMPILE_CACHE_DIR = "./ScriptEngines/Phlox/cache";
+        public IEnumerable<UUID> ScriptIds;
 
         /// <summary>
-        /// Where the states for each script in each item are stored. This is stored under the itemid /states/{itemid}.state
+        /// A collection of serialized scripts we were able to retrieve
         /// </summary>
-        public const string STATE_SAVE_DIR = "./ScriptEngines/Phlox/states";
+        public Dictionary<UUID, byte[]> Bytecodes;
 
         /// <summary>
-        /// How many characters of an item or asset id are used to create subfolders for cached scripts
+        /// Note that we're letting this object's finalizer Dispose() the instance. In the case of a 
+        /// timeout we wont have any other choice
         /// </summary>
-        public const int CACHE_PREFIX_LEN = 3;
+        private ManualResetEventSlim _signalEvent = new ManualResetEventSlim();
 
         /// <summary>
-        /// The file extension for a compiled script
+        /// Signals that the serialized data is available
         /// </summary>
-        public const string COMPILED_SCRIPT_EXTENSION = ".plx";
+        internal void SignalDataReady()
+        {
+            _signalEvent.Set();
+        }
 
         /// <summary>
-        /// The file extension for saved state data
+        /// Waits for the serialized data to become available
         /// </summary>
-        public const string STATE_DATA_EXTENSION = ".state";
+        /// <param name="timeout">Timeout in millis</param>
+        internal bool WaitForData(int timeout)
+        {
+            return _signalEvent.Wait(timeout);
+        }
     }
 }

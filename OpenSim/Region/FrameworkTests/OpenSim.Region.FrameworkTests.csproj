@@ -84,9 +84,9 @@
       <HintPath>..\..\..\bin\C5.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="InWorldz.Phlox">
-      <Name>InWorldz.Phlox</Name>
-      <HintPath>..\..\..\bin\InWorldz.Phlox.dll</HintPath>
+    <Reference Include="Halcyon.Phlox">
+      <Name>Halcyon.Phlox</Name>
+      <HintPath>..\..\..\bin\Halcyon.Phlox.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="KellermanSoftware.Compare-NET-Objects">

@@ -33,26 +33,55 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace InWorldz.Phlox.Engine
+using OpenMetaverse;
+using Halcyon.Phlox.Types;
+using log4net;
+using System.Reflection;
+using OpenSim.Region.Framework.Scenes;
+using OpenSim.Framework;
+using OpenSim.Region.ScriptEngine.Shared.ScriptBase;
+
+namespace Halcyon.Phlox.Engine
 {
-    /// <summary>
-    /// The status of work completion in a sub scheduler
-    /// </summary>
-    internal struct WorkStatus
+    internal class LogOutputListener : ILSLListener
     {
-        /// <summary>
-        /// Was work completed on the last DoWork iteration
-        /// </summary>
-        public bool WorkWasDone;
+        private static readonly ILog _log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        /// <summary>
-        /// Is work pending after the last DoWork iteration
-        /// </summary>
-        public bool WorkIsPending;
+        #region ILSLListener Members
+        bool _hasErrors = false;
 
-        /// <summary>
-        /// When will more work be available
-        /// </summary>
-        public UInt64 NextWakeUpTime;
+        List<SceneObjectPart> parts;
+
+        public LogOutputListener(IEnumerable<LoadUnloadRequest> requests)
+        {
+            parts = new List<SceneObjectPart>(requests.Select(r => r.Prim));
+        }
+
+        public void Error(string message)
+        {
+            _hasErrors = true;
+            _log.Error("[Phlox]: " + message);
+
+            foreach (SceneObjectPart part in parts)
+            {
+                LSLSystemAPI.ChatFromObject(ScriptBaseClass.DEBUG_CHANNEL, message, ChatTypeEnum.Shout, part.ParentGroup.Scene, part, UUID.Zero);
+            }
+        }
+
+        public bool HasErrors()
+        {
+            return _hasErrors;
+        }
+
+        public void Info(string message)
+        {
+            _log.Info("[Phlox]: " + message);
+        }
+
+        public void CompilationFinished()
+        {
+        }
+
+        #endregion
     }
 }

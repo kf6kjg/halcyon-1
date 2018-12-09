@@ -33,81 +33,48 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using OpenMetaverse;
+using Halcyon.Phlox.Types;
 
-namespace InWorldz.Phlox.Engine
+namespace Halcyon.Phlox.Engine
 {
     /// <summary>
-    /// A submitted request for script information
+    /// Notifies more than one listener of compiler status
     /// </summary>
-    internal class ScriptInfoRequest
+    internal class MulticastCompilerListener : ILSLListener
     {
-        public delegate void InfoRetrieved(ScriptInfoRequest req);
-        private InfoRetrieved _retrievedCallback;
-        
-        public enum Type
+        private List<ILSLListener> _delegates;
+        private bool _hasErrors = false;
+
+
+
+        public MulticastCompilerListener(IEnumerable<ILSLListener> listeners)
         {
-            ScriptRunningRequest,
-            ScriptEnabledDetailsRequest
+            _delegates = new List<ILSLListener>(listeners);
         }
 
-        private UUID _itemId;
-        public UUID ItemId
+        #region ILSLListener Members
+
+        public void CompilationFinished()
         {
-            get
-            {
-                return _itemId;
-            }
+            _delegates.ForEach(delegate(ILSLListener listener) { listener.CompilationFinished(); });
         }
 
-        private Type _reqType;
-        public Type ReqType
+        public void Error(string message)
         {
-            get
-            {
-                return _reqType;
-            }
+            _hasErrors = true;
+            _delegates.ForEach(delegate(ILSLListener listener) { listener.Error(message); });
         }
 
-        private bool _isRunning;
-        public bool IsRunning
+        public bool HasErrors()
         {
-            get
-            {
-                return _isRunning;
-            }
-
-            set
-            {
-                _isRunning = value;
-            }
+            return _hasErrors;
         }
 
-        public List<Tuple<UUID, bool, VM.RuntimeState.LocalDisableFlag>> DetailedEnabledInfo { get; set; }
-
-        private IEnumerable<UUID> _scriptItemsToCheck;
-        public IEnumerable<UUID> ScriptItemList
+        public void Info(string message)
         {
-            get { return _scriptItemsToCheck; }
+            _delegates.ForEach(delegate(ILSLListener listener) { listener.Info(message); });
         }
 
-        public ScriptInfoRequest(UUID itemId, Type reqType, InfoRetrieved retrievedCallback)
-        {
-            _itemId = itemId;
-            _reqType = reqType;
-            _retrievedCallback = retrievedCallback;
-        }
-
-        public ScriptInfoRequest(Type reqType, IEnumerable<UUID> scriptItemIds, InfoRetrieved retrievedCallback)
-        {
-            _reqType = reqType;
-            _retrievedCallback = retrievedCallback;
-            _scriptItemsToCheck = scriptItemIds;
-        }
-
-        public void FireRetrievedCallBack()
-        {
-            _retrievedCallback(this);
-        }
+        #endregion
     }
 }

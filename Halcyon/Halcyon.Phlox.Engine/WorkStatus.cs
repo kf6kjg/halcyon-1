@@ -32,49 +32,27 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using OpenMetaverse;
-using System.Threading;
 
-namespace InWorldz.Phlox.Engine
+namespace Halcyon.Phlox.Engine
 {
     /// <summary>
-    /// A request to the script loader to serialize a copy of the compiled
-    /// script that it may have loaded for the given asset ids
+    /// The status of work completion in a sub scheduler
     /// </summary>
-    internal class RetrieveBytecodeRequest
+    internal struct WorkStatus
     {
         /// <summary>
-        /// An enumerable specifying the script IDs for which we would like to get a serialized
-        /// copy of the compiled script with bytecode data
+        /// Was work completed on the last DoWork iteration
         /// </summary>
-        public IEnumerable<UUID> ScriptIds;
+        public bool WorkWasDone;
 
         /// <summary>
-        /// A collection of serialized scripts we were able to retrieve
+        /// Is work pending after the last DoWork iteration
         /// </summary>
-        public Dictionary<UUID, byte[]> Bytecodes;
+        public bool WorkIsPending;
 
         /// <summary>
-        /// Note that we're letting this object's finalizer Dispose() the instance. In the case of a 
-        /// timeout we wont have any other choice
+        /// When will more work be available
         /// </summary>
-        private ManualResetEventSlim _signalEvent = new ManualResetEventSlim();
-
-        /// <summary>
-        /// Signals that the serialized data is available
-        /// </summary>
-        internal void SignalDataReady()
-        {
-            _signalEvent.Set();
-        }
-
-        /// <summary>
-        /// Waits for the serialized data to become available
-        /// </summary>
-        /// <param name="timeout">Timeout in millis</param>
-        internal bool WaitForData(int timeout)
-        {
-            return _signalEvent.Wait(timeout);
-        }
+        public UInt64 NextWakeUpTime;
     }
 }
