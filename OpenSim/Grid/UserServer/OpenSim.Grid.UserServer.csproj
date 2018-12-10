@@ -76,15 +76,11 @@
       <HintPath>..\..\..\bin\DotNetOpenId.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="LibreMetaverse.StructuredData">
-      <Name>LibreMetaverse.StructuredData</Name>
-      <HintPath>..\..\..\bin\LibreMetaverse.StructuredData.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="LibreMetaverse.StructuredData, Version=1.2.5.188, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\LibreMetaverse.StructuredData.1.2.5.188\lib\net461\LibreMetaverse.StructuredData.dll</HintPath>
     </Reference>
-    <Reference Include="LibreMetaverse.Types">
-      <Name>LibreMetaverse.Types</Name>
-      <HintPath>..\..\..\bin\LibreMetaverse.Types.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="LibreMetaverse.Types, Version=1.2.5.188, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\LibreMetaverse.Types.1.2.5.188\lib\net461\LibreMetaverse.Types.dll</HintPath>
     </Reference>
     <Reference Include="log4net">
       <Name>log4net</Name>
@@ -100,14 +96,20 @@
       <Name>OpenSim.Grid.Communications.OGS1</Name>
       <Private>False</Private>
     </Reference>
+    <Reference Include="protobuf-net, Version=2.4.0.0, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\protobuf-net.2.4.0\lib\net40\protobuf-net.dll</HintPath>
+    </Reference>
     <Reference Include="System">
       <Name>System</Name>
       <Private>False</Private>
     </Reference>
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Data">
       <Name>System.Data</Name>
       <Private>False</Private>
     </Reference>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Web">
       <Name>System.Web</Name>
       <Private>False</Private>
@@ -203,6 +205,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

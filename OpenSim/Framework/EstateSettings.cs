@@ -481,7 +481,7 @@ namespace OpenSim.Framework
                     m_BlockDwell = ((flags & RegionFlags.BlockDwell) != 0);
                     m_EstateSkipScripts = ((flags & RegionFlags.EstateSkipScripts) != 0);
                     m_ResetHomeOnTeleport = ((flags & RegionFlags.ResetHomeOnTeleport) != 0);
-                    m_TaxFree = ((flags & RegionFlags.TaxFree) != 0);
+                    m_TaxFree = ((flags & RegionFlags.AllowAccessOverride) != 0);
                     m_PublicAccess = ((flags & RegionFlags.PublicAllowed) != 0);
                     break;
                 case "billable_factor":

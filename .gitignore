@@ -234,7 +234,7 @@ bin/*.dll*
 bin/*.DLL*
 bin/*.so*
 bin/*.dylib*
-bin/*.xml*
+bin/**/*.xml*
 bin/*.XML*
 bin/*.exe.config
 bin/*.stg

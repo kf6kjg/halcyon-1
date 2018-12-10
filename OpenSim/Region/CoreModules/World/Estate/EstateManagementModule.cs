@@ -1423,7 +1423,7 @@ namespace OpenSim.Region.CoreModules.World.Estate
             if (m_scene.RegionInfo.EstateSettings.ResetHomeOnTeleport)
                 flags |= RegionFlags.ResetHomeOnTeleport;
             if (m_scene.RegionInfo.EstateSettings.TaxFree)
-                flags |= RegionFlags.TaxFree;
+                flags |= RegionFlags.AllowAccessOverride;
             if (m_scene.RegionInfo.EstateSettings.DenyMinors)
                 flags |= (RegionFlags.DenyAgeUnverified);
 

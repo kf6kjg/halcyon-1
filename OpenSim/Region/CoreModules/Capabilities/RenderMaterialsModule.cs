@@ -29,7 +29,7 @@ using System;
 using System.Reflection;
 using System.Collections.Generic;
 using System.IO;
-using zlib;
+using ComponentAce.Compression.Libs.zlib;
 
 using Nini.Config;
 using Mono.Addins;
