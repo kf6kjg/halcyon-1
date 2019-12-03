@@ -512,6 +512,8 @@ namespace OpenSim.Framework.Servers.HttpServer
 
         public void SendResponse(OSHttpRequest request, OSHttpResponse response, IRequestHandler requestHandler, byte[] buffer)
         {
+            m_log.Debug($"Sending buffer: '{Encoding.UTF8.GetString(buffer)}'");
+
             try
             {
                 request.InputStream.Close();
@@ -680,23 +682,55 @@ namespace OpenSim.Framework.Servers.HttpServer
 
         private void LogIncomingInDetail(OSHttpRequest request)
         {
-            using (StreamReader reader = new StreamReader(Util.Copy(request.InputStream), Encoding.UTF8))
+            if (request.ContentType == "application/octet-stream")
             {
-                string output;
+                m_log.Debug($"[BASE HTTP SERVER]: Received binary data.");
+                return;
+            }
 
-                if (DebugLevel == 5)
+            Stream decodedStream = null;
+            try
+            {
+                decodedStream = Util.Copy(request.InputStream);
+            }
+            catch (ArgumentException e)
+            {
+                m_log.Debug($"[BASE HTTP SERVER]: Received data cannot be inspected for debug as it cannot be read non-destructively.");
+                return;
+            }
+
+            Stream rawStream = null;
+            try
+            {
+                if (request.Headers["Content-Encoding"] == "gzip" || request.Headers["X-Content-Encoding"] == "gzip")
                 {
-                    const int sampleLength = 80;
-                    char[] sampleChars = new char[sampleLength];
-                    reader.Read(sampleChars, 0, sampleLength);
-                    output = new string(sampleChars);
-                }
-                else
-                {
-                    output = reader.ReadToEnd();
+                    rawStream = decodedStream;
+                    decodedStream = new GZipStream(rawStream, CompressionMode.Decompress);
                 }
 
-                m_log.DebugFormat("[BASE HTTP SERVER]: {0}...", output.Replace("\n", @"\n"));
+                using (StreamReader reader = new StreamReader(decodedStream, Encoding.UTF8))
+                {
+                    string output;
+
+                    if (DebugLevel == 5)
+                    {
+                        const int sampleLength = 80;
+                        char[] sampleChars = new char[sampleLength];
+                        var charCountRead = reader.Read(sampleChars, 0, sampleLength);
+                        output = new string(sampleChars);
+                    }
+                    else
+                    {
+                        output = reader.ReadToEnd();
+                    }
+                    
+                    m_log.Debug($"[BASE HTTP SERVER]: {output.Replace("\n", @"\n")}...");
+                }
+            }
+            finally
+            {
+                rawStream?.Dispose();
+                decodedStream.Dispose();
             }
         }
 
